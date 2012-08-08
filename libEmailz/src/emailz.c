@@ -433,13 +433,13 @@ emailz_socket_stop (emailz_socket_t socket)
 	if (!socket)
 		return false;
 	
-	if (socket->sslcontext && socket->channel)
-		SSLClose(socket->sslcontext);
-	
-	if (socket->channel)
-		dispatch_io_close(socket->channel, DISPATCH_IO_STOP);
-	
 	if (socket->socketfd) {
+		if (socket->sslcontext && socket->channel)
+			SSLClose(socket->sslcontext);
+		
+		if (socket->channel)
+			dispatch_io_close(socket->channel, DISPATCH_IO_STOP);
+		
 		close(socket->socketfd);
 		socket->socketfd = 0;
 	}
@@ -477,7 +477,7 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 				return;
 			}
 			else {
-				XLOG("[%s:%hu] ssl connection established", socket->addrstr, socket->port);
+				//XLOG("[%s:%hu] ssl connection established", socket->addrstr, socket->port);
 				socket->is_handshaking = false;
 			}
 		}
@@ -485,8 +485,14 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 		while (1) {
 			oserr = SSLRead(socket->sslcontext, buffer, 1000, &processed);
 			
-			if (oserr && oserr != errSSLWouldBlock) {
-				printf("%s.. failed to SSLRead(), %d\n", __PRETTY_FUNCTION__, oserr);
+			if (oserr && oserr == errSSLClosedGraceful) {
+				printf("%s.. ssl connection closed gracefully\n", __PRETTY_FUNCTION__);
+				emailz_socket_stop(socket);
+				break;
+			}
+			else if (oserr && oserr != errSSLWouldBlock) {
+				printf("%s.. failed to SSLRead(), %s [%d]\n", __PRETTY_FUNCTION__, strerror(oserr), oserr);
+				emailz_socket_stop(socket);
 				break;
 			}
 			else if (!processed)
@@ -704,7 +710,10 @@ emailz_socket_handle_write (emailz_socket_t socket, char *buffer, ssize_t buffer
 	else {
 		if (!handler)
 			handler = ^ (bool done, dispatch_data_t data, int error) {
-				if (error) { XLOG("[%s:%hu] failed to dispatch_io_write(), %s [%d]", socket->addrstr, socket->port, strerror(errno), errno); }
+				if (error) {
+					XLOG("[%s:%hu] failed to dispatch_io_write(), %s [%d]", socket->addrstr, socket->port, strerror(error), error);
+					emailz_socket_stop(socket);
+				}
 			};
 		
 		socket->outbytes += bufferlen;
@@ -1178,7 +1187,8 @@ emailz_sslsocket_write (SSLConnectionRef connection, const void *buffer, size_t 
 	dispatch_data_t data = dispatch_data_create(buffer, *bufferlen, socket->queue, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
 	dispatch_io_write(socket->channel, 0, data, socket->queue, ^(bool done, dispatch_data_t data, int error){
 		if (error) {
-			XLOG("[%s:%hu] failed to dispatch_io_write(), %s [%d]", socket->addrstr, socket->port, strerror(errno), errno);
+			XLOG("[%s:%hu] failed to dispatch_io_write(), %s [%d]", socket->addrstr, socket->port, strerror(error), error);
+			emailz_socket_stop(socket);
 		}
 	});
 	dispatch_release(data);
@@ -1202,27 +1212,37 @@ emailz_sslsocket_read (SSLConnectionRef connection, void *data, size_t *datalen)
 {
 	emailz_socket_t socket = (emailz_socket_t)connection;
 	dispatch_data_t tmpdata = socket->tmpdata;
-	__block size_t _datalen = *datalen;
+	__block size_t remaining = *datalen;
 	__block void *dataptr = data;
+	size_t requested = *datalen;
+	size_t available = dispatch_data_get_size(tmpdata);
+	OSStatus result = noErr;
+	
+	// short cut if we don't have any data. we assume that the caller will never request zero bytes.
+	if (0 == available) {
+		*datalen = 0;
+		return errSSLWouldBlock;
+	}
+	else if (requested > available) {
+		*datalen = available;
+		result = errSSLWouldBlock;
+	}
 	
 	dispatch_data_apply(tmpdata, ^ bool (dispatch_data_t region, size_t offset, const void *buffer, size_t size) {
-		memcpy(dataptr, buffer, (size = MIN(_datalen, size)));
+		memcpy(dataptr, buffer, (size = MIN(remaining, size)));
 		dataptr += size;
-		_datalen -= size;
-		return _datalen;
+		remaining -= size;
+		return remaining;
 	});
 	
-	//XLOG("[%s:%hu] available=%lu, requested=%lu, returned=%lu, remaining=%lu", socket->addrstr, socket->port, dispatch_data_get_size(tmpdata), *datalen, (*datalen-_datalen), (dispatch_data_get_size(tmpdata)-(*datalen-_datalen)));
+	size_t returning = requested - remaining;
 	
-	_datalen = *datalen = *datalen - _datalen;
+	//XLOG("[%s:%hu] available=%lu, requested=%lu, returned=%lu, remaining=%lu", socket->addrstr, socket->port, available, requested, returning, (available-returning));
 	
-	socket->tmpdata = dispatch_data_create_subrange(tmpdata, _datalen, dispatch_data_get_size(tmpdata)-_datalen);
+	socket->tmpdata = dispatch_data_create_subrange(tmpdata, returning, available-returning);
 	dispatch_release(tmpdata);
 	
-	if (_datalen == 0)
-		return errSSLWouldBlock;
-	else
-		return 0;
+	return result;
 }
 
 

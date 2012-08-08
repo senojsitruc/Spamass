@@ -33,7 +33,7 @@ static SMAppDelegate *gAppDelegate;
 @implementation SMAppDelegate
 
 /**
- * FROM:<curtis@symphonicsys.com>
+ * FROM:<curtis@symphonicsys.com> SIZE=12345
  *
  */
 - (void)handleFrom:(NSString *)arg withSocket:(SMSocket *)socket
@@ -46,7 +46,16 @@ static SMAppDelegate *gAppDelegate;
 	if ([arg hasPrefix:@"FROM:"])
 		arg = [arg substringFromIndex:5];
 	
-	socket.email.sender = [arg stringByTrimmingCharactersInSet:mEmailSplitSet];
+	NSArray *parts = [arg componentsSeparatedByCharactersInSet:mEmailSplitSet];
+	
+	for (NSString *part in parts) {
+		if (part.length != 0) {
+			socket.email.sender = part;
+			break;
+		}
+	}
+	
+	//socket.email.sender = [arg stringByTrimmingCharactersInSet:mEmailSplitSet];
 }
 
 /**
@@ -138,8 +147,8 @@ done:
 	[mDb setString:email.sender forKey:[prefix stringByAppendingString:@"sender"]];
 	[mDb setString:[[NSNumber numberWithInteger:email.dataSize] stringValue] forKey:[prefix stringByAppendingString:@"size"]];
 	
-	NSString *terminalKey = [[email.recipients objectAtIndex:0] stringByAppendingString:@"__99999999999999999-999.999.999.999-99999__999999"];
-	NSLog(@"%s.. terminalKey='%@'", __PRETTY_FUNCTION__, terminalKey);
+	//NSString *terminalKey = [[email.recipients objectAtIndex:0] stringByAppendingString:@"__99999999999999999-999.999.999.999-99999__999999"];
+	//NSLog(@"%s.. terminalKey='%@'", __PRETTY_FUNCTION__, terminalKey);
 	
 	[mDb setString:@"1" forKey:[[email.recipients objectAtIndex:0] stringByAppendingString:@"__99999999999999999-999.999.999.999-99999__999999"]];
 	
@@ -172,6 +181,7 @@ done:
 		return;
 	}
 	
+	/*
 	{
 		APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mDb];
 		NSString *key = nil;
@@ -180,6 +190,7 @@ done:
 			NSLog(@"%s.. key='%@', value='%@'", __PRETTY_FUNCTION__, key, [mDb stringForKey:key]);
 		}
 	}
+	*/
 	
 	mHttpQueue = dispatch_queue_create("net.spamass.spamass-http", DISPATCH_QUEUE_CONCURRENT);
 	
@@ -264,7 +275,6 @@ done:
 	
 	dispatch_async(mHttpQueue, ^{
 		APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mDb];
-//	NSString *prefix = [address stringByAppendingString:@"__"];
 		SMEmail *email = nil;
 		NSString *key;
 		
@@ -294,9 +304,17 @@ done:
 					email = [[SMEmail alloc] init];
 					email.socketId = partSocket;
 					email.serial = partSerial;
+					[email.recipients addObject:partAddress];
 				}
 				
-				[email.headers setObject:[iter valueAsString] forKey:partField];
+				NSString *value = [iter valueAsString];
+				
+				if ([partField isEqualToString:@"sender"])
+					email.sender = value;
+				else if ([partField isEqualToString:@"size"])
+					email.dataSize = [value integerValue];
+				else
+					[email.headers setObject:[iter valueAsString] forKey:partField];
 			}
 			
 			if (email)

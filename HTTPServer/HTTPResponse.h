@@ -126,7 +126,7 @@
  * You don't have to keep track of when you return nil in the readDataOfLength method, or how many times you've invoked
  * responseHasAvailableData. Just simply call responseHasAvailableData whenever you've generated new data, and
  * return nil in your readDataOfLength whenever you don't have any available data in the requested range.
- * HTTPConnection will automatically detect when it should be requesting new data and will act appropriately.
+ * HTTPConnection will automatically detect when it should request new data and will act appropriately.
  * 
  * It's important that you also keep in mind that the HTTP server supports range requests.
  * The setOffset method is mandatory, and should not be ignored.

@@ -47,6 +47,7 @@
 		F9C2527D15D20308005D1834 /* DispatchQueueLogFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C2527215D20308005D1834 /* DispatchQueueLogFormatter.m */; };
 		F9C2527E15D20308005D1834 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = F9C2527315D20308005D1834 /* README.txt */; };
 		F9C2528115D2057F005D1834 /* HTTPSpamassResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */; };
+		F9C2528415D29E11005D1834 /* NSMutableArray+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,8 +66,8 @@
 		F9C251E515D15292005D1834 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		F9C251EC15D152A9005D1834 /* libEmailz.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libEmailz.a; path = "../../../../../DasRamDisk/Xcode/Spamass-eotgjytquxczcqaghkjkdlxfygfo/Build/Products/Debug/libEmailz.a"; sourceTree = "<group>"; };
 		F9C251F015D152C0005D1834 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		F9C251F615D155B7005D1834 /* APLevelDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = APLevelDB.h; sourceTree = "<group>"; };
-		F9C251F715D155B7005D1834 /* APLevelDB.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = APLevelDB.mm; sourceTree = "<group>"; };
+		F9C251F615D155B7005D1834 /* APLevelDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = APLevelDB.h; path = ../APLevelDB.h; sourceTree = "<group>"; };
+		F9C251F715D155B7005D1834 /* APLevelDB.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = APLevelDB.mm; path = ../APLevelDB.mm; sourceTree = "<group>"; };
 		F9C251FA15D1571A005D1834 /* c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = c.h; sourceTree = "<group>"; };
 		F9C251FB15D1571A005D1834 /* cache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cache.h; sourceTree = "<group>"; };
 		F9C251FC15D1571A005D1834 /* comparator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = comparator.h; sourceTree = "<group>"; };
@@ -138,8 +139,10 @@
 		F9C2527115D20308005D1834 /* DispatchQueueLogFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DispatchQueueLogFormatter.h; sourceTree = "<group>"; };
 		F9C2527215D20308005D1834 /* DispatchQueueLogFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DispatchQueueLogFormatter.m; sourceTree = "<group>"; };
 		F9C2527315D20308005D1834 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
-		F9C2527F15D2057F005D1834 /* HTTPSpamassResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPSpamassResponse.h; sourceTree = "<group>"; };
-		F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPSpamassResponse.m; sourceTree = "<group>"; };
+		F9C2527F15D2057F005D1834 /* HTTPSpamassResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTPSpamassResponse.h; path = ../../HTTPServer/Responses/HTTPSpamassResponse.h; sourceTree = "<group>"; };
+		F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTTPSpamassResponse.m; path = ../../HTTPServer/Responses/HTTPSpamassResponse.m; sourceTree = "<group>"; };
+		F9C2528215D29E10005D1834 /* NSMutableArray+Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray+Additions.h"; sourceTree = "<group>"; };
+		F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+Additions.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,18 +194,20 @@
 		F9C251D515D15292005D1834 /* Spamass */ = {
 			isa = PBXGroup;
 			children = (
-				F9C251F615D155B7005D1834 /* APLevelDB.h */,
-				F9C251F715D155B7005D1834 /* APLevelDB.mm */,
 				F9C251E115D15292005D1834 /* SMAppDelegate.h */,
 				F9C251E215D15292005D1834 /* SMAppDelegate.m */,
-				F9C251E415D15292005D1834 /* MainMenu.xib */,
-				F9C251F915D1571A005D1834 /* leveldb */,
-				F9C2522815D202B0005D1834 /* HTTPServer */,
-				F9C251D615D15292005D1834 /* Supporting Files */,
 				F9C2521715D1C34D005D1834 /* SMEmail.h */,
 				F9C2521815D1C34D005D1834 /* SMEmail.m */,
 				F9C2521A15D1C662005D1834 /* SMSocket.h */,
 				F9C2521B15D1C662005D1834 /* SMSocket.m */,
+				F9C2527F15D2057F005D1834 /* HTTPSpamassResponse.h */,
+				F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */,
+				F9C251E415D15292005D1834 /* MainMenu.xib */,
+				F9C251F915D1571A005D1834 /* leveldb */,
+				F9C2522815D202B0005D1834 /* HTTPServer */,
+				F9C251D615D15292005D1834 /* Supporting Files */,
+				F9C2528215D29E10005D1834 /* NSMutableArray+Additions.h */,
+				F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */,
 			);
 			path = Spamass;
 			sourceTree = "<group>";
@@ -222,6 +227,8 @@
 		F9C251F915D1571A005D1834 /* leveldb */ = {
 			isa = PBXGroup;
 			children = (
+				F9C251F615D155B7005D1834 /* APLevelDB.h */,
+				F9C251F715D155B7005D1834 /* APLevelDB.mm */,
 				F9C251FA15D1571A005D1834 /* c.h */,
 				F9C251FB15D1571A005D1834 /* cache.h */,
 				F9C251FC15D1571A005D1834 /* comparator.h */,
@@ -303,8 +310,6 @@
 				F9C2524915D202B0005D1834 /* HTTPFileResponse.m */,
 				F9C2524A15D202B0005D1834 /* HTTPRedirectResponse.h */,
 				F9C2524B15D202B0005D1834 /* HTTPRedirectResponse.m */,
-				F9C2527F15D2057F005D1834 /* HTTPSpamassResponse.h */,
-				F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */,
 			);
 			path = Responses;
 			sourceTree = "<group>";
@@ -448,6 +453,7 @@
 				F9C2527C15D20308005D1834 /* ContextFilterLogFormatter.m in Sources */,
 				F9C2527D15D20308005D1834 /* DispatchQueueLogFormatter.m in Sources */,
 				F9C2528115D2057F005D1834 /* HTTPSpamassResponse.m in Sources */,
+				F9C2528415D29E11005D1834 /* NSMutableArray+Additions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,6 +546,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_OBJCPP_ARC_ABI = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer: Curtis Jones (6NZ4UL4VF7)";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Spamass/Spamass-Prefix.pch";
@@ -554,6 +561,7 @@
 					"\"$(SRCROOT)/../lib\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "3C001B85-2DE6-4F2B-8E1B-7CD9436A9B0A";
 				VALID_ARCHS = x86_64;
 				WRAPPER_EXTENSION = app;
 			};
@@ -565,6 +573,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "compiler-default";
 				CLANG_WARN_OBJCPP_ARC_ABI = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer: Curtis Jones (6NZ4UL4VF7)";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Spamass/Spamass-Prefix.pch";
@@ -579,6 +588,7 @@
 					"\"$(SRCROOT)/../lib\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "3C001B85-2DE6-4F2B-8E1B-7CD9436A9B0A";
 				VALID_ARCHS = x86_64;
 				WRAPPER_EXTENSION = app;
 			};

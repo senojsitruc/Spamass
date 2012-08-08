@@ -12,6 +12,7 @@
 #import "HTTPSpamassResponse.h"
 #import "WebSocket.h"
 #import "HTTPLogging.h"
+#import "NSMutableArray+Additions.h"
 
 #if ! __has_feature(objc_arc)
 #warning This file must be compiled with ARC. Use -fobjc-arc flag (or convert project to ARC).
@@ -2392,9 +2393,14 @@ static NSMutableArray *recentNonces;
 - (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag
 {
 	BOOL doneSendingResponse = NO;
+	BOOL isZero = 0 == [responseDataSizes count];
 	
 	if (tag == HTTP_PARTIAL_RESPONSE_BODY)
 	{
+		if (isZero) {
+			NSLog(@"%s.. is zero!", __PRETTY_FUNCTION__);
+		}
+		
 		// Update the amount of data we have in asyncSocket's write queue
 		[responseDataSizes removeObjectAtIndex:0];
 		
@@ -2403,9 +2409,13 @@ static NSMutableArray *recentNonces;
 	}
 	else if (tag == HTTP_CHUNKED_RESPONSE_BODY)
 	{
+		if (isZero) {
+			NSLog(@"%s.. is zero!", __PRETTY_FUNCTION__);
+		}
+		
 		// Update the amount of data we have in asyncSocket's write queue.
 		// This will allow asynchronous responses to continue sending more data.
-		[responseDataSizes removeObjectAtIndex:0];
+		[responseDataSizes removeFirstObject];
 		
 		// Don't continue sending the response yet.
 		// The chunked footer that was sent after the body will tell us if we have more data to send.
@@ -2417,16 +2427,24 @@ static NSMutableArray *recentNonces;
 	}
 	else if (tag == HTTP_PARTIAL_RANGE_RESPONSE_BODY)
 	{
+		if (isZero) {
+			NSLog(@"%s.. is zero!", __PRETTY_FUNCTION__);
+		}
+		
 		// Update the amount of data we have in asyncSocket's write queue
-		[responseDataSizes removeObjectAtIndex:0];
+		[responseDataSizes removeFirstObject];
 		
 		// We only wrote a part of the range - there may be more
 		[self continueSendingSingleRangeResponseBody];
 	}
 	else if (tag == HTTP_PARTIAL_RANGES_RESPONSE_BODY)
 	{
+		if (isZero) {
+			NSLog(@"%s.. is zero!", __PRETTY_FUNCTION__);
+		}
+		
 		// Update the amount of data we have in asyncSocket's write queue
-		[responseDataSizes removeObjectAtIndex:0];
+		[responseDataSizes removeFirstObject];
 		
 		// We only wrote part of the range - there may be more, or there may be more ranges
 		[self continueSendingMultiRangeResponseBody];
@@ -2434,10 +2452,7 @@ static NSMutableArray *recentNonces;
 	else if (tag == HTTP_RESPONSE || tag == HTTP_FINAL_RESPONSE)
 	{
 		// Update the amount of data we have in asyncSocket's write queue
-		if ([responseDataSizes count] > 0)
-		{
-			[responseDataSizes removeObjectAtIndex:0];
-		}
+		[responseDataSizes removeFirstObject];
 		
 		doneSendingResponse = YES;
 	}

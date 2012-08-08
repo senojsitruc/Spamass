@@ -14,6 +14,7 @@
 @interface HTTPSpamassResponse ()
 {
 	BOOL mIsDone;
+	NSUInteger mResultCount;
 }
 
 @property (nonatomic, strong) NSString *filePath;
@@ -36,22 +37,100 @@
 	response.connection = connection;
 	response.theOffset = 0;
 	response.dataBuffer = [[NSMutableData alloc] init];
-	response->mIsDone = TRUE;
+	response->mIsDone = FALSE;;
 	
 	filePath = [filePath stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]];
 	
 	NSLog(@"%s.. filePath='%@'", __PRETTY_FUNCTION__, filePath);
 	
+	// search result header
+	{
+		NSMutableString *output = [[NSMutableString alloc] init];
+		[output appendString:@"<html><head><title>"];
+		[output appendString:filePath];
+		[output appendString:@"</title></head><body>"];
+		[output appendString:@"<table border=1 cellspacing=0 cellspacing=0><tr><td>"];
+		[output appendString:@"<table border=0 cellpadding=3 cellspacing=10><tr>"];
+		[output appendString:@"<td>&nbsp;</td>"];
+		[output appendString:@"<td>Sender</td>"];
+		[output appendString:@"<td>Recipient</td>"];
+		[output appendString:@"<td>Subject</td>"];
+		[output appendString:@"<td>Size (bytes)</td>"];
+		[output appendString:@"<td>Date (GMT)</td>"];
+		[output appendString:@"<td>Remote</td>"];
+		[output appendString:@"</tr>\r\n"];
+		[response.dataBuffer appendBytes:output.UTF8String length:output.length];
+	}
+	
 	[SMAppDelegate emailsForAddress:filePath withBlock:^ (SMEmail *email) {
-		NSLog(@"%s.. got an email!", __PRETTY_FUNCTION__);
-		
-		if (!email)
-			response->mIsDone = TRUE;
-		else {
-			[response.dataBuffer appendBytes:email.socketId.UTF8String length:email.socketId.length];
-			[response.dataBuffer appendBytes:"\r\n" length:2];
+		if (!response.connection) {
+			NSLog(@"%s.. no more connection!", __PRETTY_FUNCTION__);
+			return;
 		}
 		
+		if (!email) {
+			response->mIsDone = TRUE;
+			
+			// search result footer
+			{
+				NSMutableString *output = [[NSMutableString alloc] init];
+				[output appendString:@"</td></tr></table>\r\n"];
+				[output appendString:@"</table></body></html>\r\n"];
+				[response.dataBuffer appendBytes:output.UTF8String length:output.length];
+			}
+		}
+		else {
+			NSMutableString *output = [[NSMutableString alloc] init];
+			NSArray *parts = [email.socketId componentsSeparatedByString:@"-"];
+			NSString *color = nil;
+			
+			if ([parts count] != 3) {
+				NSLog(@"%s.. invalid socketid [%@]", __PRETTY_FUNCTION__, email.socketId);
+				return;
+			}
+			
+			response->mResultCount += 1;
+			
+			if ((response->mResultCount % 2))
+				color = @"Azure";
+			else
+				color = @"White";
+			
+			NSString *date = [parts objectAtIndex:0];
+			NSString *addr = [parts objectAtIndex:1];
+			NSString *port = [parts objectAtIndex:2];
+			
+			[output appendString:@"<tr bgcolor=\""];
+			[output appendString:color];
+			[output appendString:@"\">"];
+			[output appendString:@"<td>"];
+			[output appendString:[[NSNumber numberWithInteger:response->mResultCount] stringValue]];
+			[output appendString:@"</td>"];
+			[output appendString:@"<td>"];
+			[output appendString:email.sender];
+			[output appendString:@"</td>"];
+			[output appendString:@"<td>"];
+			[output appendString:[email.recipients objectAtIndex:0]];
+			[output appendString:@"</td>"];
+			[output appendString:@"<td>"];
+			[output appendString:[email.headers objectForKey:@"subject"]];
+			[output appendString:@"</td>"];
+			[output appendString:@"<td>"];
+			[output appendString:[[NSNumber numberWithInteger:email.dataSize] stringValue]];
+			[output appendString:@"</td>"];
+			[output appendString:@"<td>"];
+			[output appendString:date];
+			[output appendString:@"</td>"];
+			[output appendString:@"<td>"];
+			[output appendString:addr];
+			[output appendString:@":"];
+			[output appendString:port];
+			[output appendString:@"</td>"];
+			[output appendString:@"</tr>\r\n"];
+			[response.dataBuffer appendBytes:output.UTF8String length:output.length];
+		}
+		
+		NSLog(@"%s.. more data [offset=%lu, length=%lu]", __PRETTY_FUNCTION__, response.theOffset, response.dataBuffer.length);
 		[connection responseHasAvailableData:response];
 	}];
 	
@@ -97,9 +176,13 @@
  */
 - (NSData *)readDataOfLength:(NSUInteger)length
 {
+	if (self.theOffset >= self.dataBuffer.length)
+		return nil;
+	
 	length = MIN(length, self.dataBuffer.length - self.theOffset);
 	NSData *data = [NSData dataWithBytes:self.dataBuffer.bytes+self.theOffset length:length];
 	self.theOffset += length;
+	
 	return data;
 }
 
@@ -109,7 +192,7 @@
  */
 - (BOOL)isDone
 {
-	return mIsDone;
+	return mIsDone && self.theOffset >= [self.dataBuffer length];
 }
 
 
@@ -131,11 +214,19 @@
  *
  *
  */
+- (BOOL)isAsynchronous
+{
+	return TRUE;
+}
+
+/**
+ *
+ *
+ */
 - (void)connectionDidClose
 {
-	
-	// TODO: after this occurs, we must not use our mConnection pointer any longer
-	
+	NSLog(@"%s.. connection closed! [offset=%lu, length=%lu]", __PRETTY_FUNCTION__, self.theOffset, self.dataBuffer.length);
+	self.connection = nil;
 }
 
 @end
