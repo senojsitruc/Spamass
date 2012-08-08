@@ -711,7 +711,7 @@ emailz_socket_handle_write (emailz_socket_t socket, char *buffer, ssize_t buffer
 		if (!handler)
 			handler = ^ (bool done, dispatch_data_t data, int error) {
 				if (error) {
-					XLOG("[%s:%hu] failed to dispatch_io_write(), %s [%d]", socket->addrstr, socket->port, strerror(error), error);
+					//XLOG("[%s:%hu] failed to dispatch_io_write(), %s [%d]", socket->addrstr, socket->port, strerror(error), error);
 					emailz_socket_stop(socket);
 				}
 			};
@@ -933,6 +933,7 @@ emailz_socket_record_open (emailz_socket_t socket)
 	
 	// file
 	strcpy(path_ptr, name);
+	path_ptr += strlen(name);
 	
 	// .socket
 	strcpy(path_ptr, ".socket");
@@ -1187,7 +1188,7 @@ emailz_sslsocket_write (SSLConnectionRef connection, const void *buffer, size_t 
 	dispatch_data_t data = dispatch_data_create(buffer, *bufferlen, socket->queue, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
 	dispatch_io_write(socket->channel, 0, data, socket->queue, ^(bool done, dispatch_data_t data, int error){
 		if (error) {
-			XLOG("[%s:%hu] failed to dispatch_io_write(), %s [%d]", socket->addrstr, socket->port, strerror(error), error);
+			//XLOG("[%s:%hu] failed to dispatch_io_write(), %s [%d]", socket->addrstr, socket->port, strerror(error), error);
 			emailz_socket_stop(socket);
 		}
 	});
