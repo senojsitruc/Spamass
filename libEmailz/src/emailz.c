@@ -15,7 +15,6 @@
 #include "logger.h"
 
 #define XLOG(...) {LOGX(__VA_ARGS__);}
-#define RECORD_BASE_DIR "/Volumes/StoreX/Spamass/Record/"
 
 static void emailz_handle_accept (emailz_t, emailz_listener_t, int, struct sockaddr_in);
 
@@ -196,12 +195,19 @@ emailz_set_socket_handler (emailz_t emailz, emailz_socket_handler_t handler)
  *
  */
 void
-emailz_record_enable (emailz_t emailz, bool enable)
+emailz_record_enable (emailz_t emailz, bool enable, char *base)
 {
 	if (!emailz)
 		return;
 	
 	emailz->socket_record = enable;
+	
+	if (strlen(base) >= sizeof(emailz->record_base)) {
+		printf("%s.. base dir is longer than we support\n", __PRETTY_FUNCTION__);
+		return;
+	}
+	
+	strcpy(emailz->record_base, base);
 }
 
 
@@ -889,7 +895,7 @@ emailz_socket_record_open (emailz_socket_t socket)
 	char *path_ptr = path;
 	
 	// base
-	strcpy(path_ptr, RECORD_BASE_DIR);
+	strcpy(path_ptr, socket->emailz->record_base);
 	mkdir(path, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
 	path_ptr += strlen(path);
 	

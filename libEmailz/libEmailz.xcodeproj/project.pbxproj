@@ -7,11 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F91F5BC115D2D7B1004C5ECB /* snappy-c.cc in Sources */ = {isa = PBXBuildFile; fileRef = F91F5BB715D2D7B1004C5ECB /* snappy-c.cc */; };
+		F91F5BC215D2D7B1004C5ECB /* snappy-c.h in Headers */ = {isa = PBXBuildFile; fileRef = F91F5BB815D2D7B1004C5ECB /* snappy-c.h */; };
+		F91F5BC315D2D7B1004C5ECB /* snappy-internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F91F5BB915D2D7B1004C5ECB /* snappy-internal.h */; };
+		F91F5BC415D2D7B1004C5ECB /* snappy-sinksource.cc in Sources */ = {isa = PBXBuildFile; fileRef = F91F5BBA15D2D7B1004C5ECB /* snappy-sinksource.cc */; };
+		F91F5BC515D2D7B1004C5ECB /* snappy-sinksource.h in Headers */ = {isa = PBXBuildFile; fileRef = F91F5BBB15D2D7B1004C5ECB /* snappy-sinksource.h */; };
+		F91F5BC615D2D7B1004C5ECB /* snappy-stubs-internal.cc in Sources */ = {isa = PBXBuildFile; fileRef = F91F5BBC15D2D7B1004C5ECB /* snappy-stubs-internal.cc */; };
+		F91F5BC715D2D7B1004C5ECB /* snappy-stubs-internal.h in Headers */ = {isa = PBXBuildFile; fileRef = F91F5BBD15D2D7B1004C5ECB /* snappy-stubs-internal.h */; };
+		F91F5BC815D2D7B1004C5ECB /* snappy-stubs-public.h in Headers */ = {isa = PBXBuildFile; fileRef = F91F5BBE15D2D7B1004C5ECB /* snappy-stubs-public.h */; };
+		F91F5BC915D2D7B1004C5ECB /* snappy.cc in Sources */ = {isa = PBXBuildFile; fileRef = F91F5BBF15D2D7B1004C5ECB /* snappy.cc */; };
+		F91F5BCA15D2D7B1004C5ECB /* snappy.h in Headers */ = {isa = PBXBuildFile; fileRef = F91F5BC015D2D7B1004C5ECB /* snappy.h */; };
 		F9C2509115CD6FE6005D1834 /* emailz.c in Sources */ = {isa = PBXBuildFile; fileRef = F9C2509015CD6FE6005D1834 /* emailz.c */; };
 		F9C2517015D09638005D1834 /* logger.h in Headers */ = {isa = PBXBuildFile; fileRef = F9C2516F15D09638005D1834 /* logger.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F91F5BB715D2D7B1004C5ECB /* snappy-c.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "snappy-c.cc"; sourceTree = "<group>"; };
+		F91F5BB815D2D7B1004C5ECB /* snappy-c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "snappy-c.h"; sourceTree = "<group>"; };
+		F91F5BB915D2D7B1004C5ECB /* snappy-internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "snappy-internal.h"; sourceTree = "<group>"; };
+		F91F5BBA15D2D7B1004C5ECB /* snappy-sinksource.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "snappy-sinksource.cc"; sourceTree = "<group>"; };
+		F91F5BBB15D2D7B1004C5ECB /* snappy-sinksource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "snappy-sinksource.h"; sourceTree = "<group>"; };
+		F91F5BBC15D2D7B1004C5ECB /* snappy-stubs-internal.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "snappy-stubs-internal.cc"; sourceTree = "<group>"; };
+		F91F5BBD15D2D7B1004C5ECB /* snappy-stubs-internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "snappy-stubs-internal.h"; sourceTree = "<group>"; };
+		F91F5BBE15D2D7B1004C5ECB /* snappy-stubs-public.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "snappy-stubs-public.h"; sourceTree = "<group>"; };
+		F91F5BBF15D2D7B1004C5ECB /* snappy.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = snappy.cc; sourceTree = "<group>"; };
+		F91F5BC015D2D7B1004C5ECB /* snappy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = snappy.h; sourceTree = "<group>"; };
 		F9C2508715CD6F5A005D1834 /* libEmailz.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libEmailz.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9C2509015CD6FE6005D1834 /* emailz.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = emailz.c; sourceTree = "<group>"; };
 		F9C2509215CD6FF5005D1834 /* emailz.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = emailz.h; sourceTree = "<group>"; };
@@ -31,6 +51,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F91F5BB615D2D7B1004C5ECB /* Snappy */ = {
+			isa = PBXGroup;
+			children = (
+				F91F5BB715D2D7B1004C5ECB /* snappy-c.cc */,
+				F91F5BB815D2D7B1004C5ECB /* snappy-c.h */,
+				F91F5BB915D2D7B1004C5ECB /* snappy-internal.h */,
+				F91F5BBA15D2D7B1004C5ECB /* snappy-sinksource.cc */,
+				F91F5BBB15D2D7B1004C5ECB /* snappy-sinksource.h */,
+				F91F5BBC15D2D7B1004C5ECB /* snappy-stubs-internal.cc */,
+				F91F5BBD15D2D7B1004C5ECB /* snappy-stubs-internal.h */,
+				F91F5BBE15D2D7B1004C5ECB /* snappy-stubs-public.h */,
+				F91F5BBF15D2D7B1004C5ECB /* snappy.cc */,
+				F91F5BC015D2D7B1004C5ECB /* snappy.h */,
+			);
+			name = Snappy;
+			path = ../../Snappy;
+			sourceTree = "<group>";
+		};
 		F9C2507C15CD6F5A005D1834 = {
 			isa = PBXGroup;
 			children = (
@@ -60,6 +98,7 @@
 		F9C2508F15CD6FA8005D1834 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				F91F5BB615D2D7B1004C5ECB /* Snappy */,
 				F9C2509215CD6FF5005D1834 /* emailz.h */,
 				F9C2509015CD6FE6005D1834 /* emailz.c */,
 				F9C2516F15D09638005D1834 /* logger.h */,
@@ -77,6 +116,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9C2517015D09638005D1834 /* logger.h in Headers */,
+				F91F5BC215D2D7B1004C5ECB /* snappy-c.h in Headers */,
+				F91F5BC315D2D7B1004C5ECB /* snappy-internal.h in Headers */,
+				F91F5BC515D2D7B1004C5ECB /* snappy-sinksource.h in Headers */,
+				F91F5BC715D2D7B1004C5ECB /* snappy-stubs-internal.h in Headers */,
+				F91F5BC815D2D7B1004C5ECB /* snappy-stubs-public.h in Headers */,
+				F91F5BCA15D2D7B1004C5ECB /* snappy.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,6 +177,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9C2509115CD6FE6005D1834 /* emailz.c in Sources */,
+				F91F5BC115D2D7B1004C5ECB /* snappy-c.cc in Sources */,
+				F91F5BC415D2D7B1004C5ECB /* snappy-sinksource.cc in Sources */,
+				F91F5BC615D2D7B1004C5ECB /* snappy-stubs-internal.cc in Sources */,
+				F91F5BC915D2D7B1004C5ECB /* snappy.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

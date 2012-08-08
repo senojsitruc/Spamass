@@ -95,7 +95,7 @@ void emailz_destroy (emailz_t);
 bool emailz_start (emailz_t);
 bool emailz_stop (emailz_t);
 void emailz_set_socket_handler (emailz_t, emailz_socket_handler_t);
-void emailz_record_enable (emailz_t, bool);
+void emailz_record_enable (emailz_t, bool, char*);
 
 /**
  *

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F91F5BCD15D2E35A004C5ECB /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F91F5BCC15D2E35A004C5ECB /* libz.dylib */; };
 		F9C251D015D15292005D1834 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9C251CF15D15292005D1834 /* Cocoa.framework */; };
 		F9C251DA15D15292005D1834 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F9C251D815D15292005D1834 /* InfoPlist.strings */; };
 		F9C251DC15D15292005D1834 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C251DB15D15292005D1834 /* main.m */; };
@@ -51,6 +52,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F91F5BCC15D2E35A004C5ECB /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		F9C251CB15D15292005D1834 /* Spamass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spamass.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9C251CF15D15292005D1834 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		F9C251D215D15292005D1834 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -150,6 +152,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F91F5BCD15D2E35A004C5ECB /* libz.dylib in Frameworks */,
 				F9C2521415D17B8B005D1834 /* libleveldb.a in Frameworks */,
 				F9C2521515D17E0B005D1834 /* libEmailz.a in Frameworks */,
 				F9C251D015D15292005D1834 /* Cocoa.framework in Frameworks */,
@@ -180,6 +183,7 @@
 		F9C251CE15D15292005D1834 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F91F5BCC15D2E35A004C5ECB /* libz.dylib */,
 				F9C2520D15D1631A005D1834 /* libleveldb.a */,
 				F9C251EC15D152A9005D1834 /* libEmailz.a */,
 				F9C251D215D15292005D1834 /* AppKit.framework */,
@@ -613,6 +617,7 @@
 				F9C251EB15D15292005D1834 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

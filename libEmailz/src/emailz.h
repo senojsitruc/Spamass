@@ -200,6 +200,7 @@ struct emailz_s
 	 */
 	emailz_socket_handler_t socket_handler;    // socket state handler
 	bool socket_record;                        // enable socket recording?
+	char record_base[1000];                    // recording base directory
 	
 	/**
 	 * listeners

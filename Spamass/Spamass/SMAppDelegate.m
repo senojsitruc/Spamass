@@ -199,7 +199,7 @@ done:
 	mEmailSplitSet = [NSCharacterSet characterSetWithCharactersInString:@" <>,\r\n"];
 	
 	mEmailz = emailz_create();
-	emailz_record_enable(mEmailz, true);
+	emailz_record_enable(mEmailz, true, "/Volumes/StoreX/Spamass/Record/");
 	
 	//
 	// smtp handler
