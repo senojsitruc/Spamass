@@ -1,0 +1,5 @@
+APNIC				Asia Pacific													ftp://ftp.apnic.net/pub/stats/apnic/delegated-apnic-latest
+AfriNIC			Africa																ftp://ftp.apnic.net/pub/stats/afrinic/delegated-afrinic-latest
+RIPE NCC		Europe, Middle East, Central Asia			ftp://ftp.ripe.net/ripe/stats/delegated-ripencc-latest
+LACNIC			Latin America													ftp://ftp.lacnic.net/pub/stats/lacnic/delegated-lacnic-latest
+ARIN				North America													ftp://ftp.arin.net/pub/stats/arin/delegated-arin-latest

@@ -1,0 +1,11 @@
+--2012-08-05 07:33:56--  http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/4/15/15
+Resolving services.arcgisonline.com... 184.31.10.177
+Connecting to services.arcgisonline.com|184.31.10.177|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 10641 (10K) [image/jpg]
+Saving to: `4-15-15.jpg'
+
+     0K ..........                                            100%  216K=0.05s
+
+2012-08-05 07:33:56 (216 KB/s) - `4-15-15.jpg' saved [10641/10641]
+

@@ -1,0 +1,6 @@
+Connection timeout
+	When a socket hasn't sent any data in 60 seconds (?) disconnect it.
+
+Max per-email size
+
+Max per-connection size
