@@ -10,6 +10,8 @@
 #import "HTTPConnection.h"
 #import "SMAppDelegate.h"
 #import "SMEmail.h"
+#import "NSString+Additions.h"
+#import "GCDAsyncSocket.h"
 
 @interface HTTPSpamassResponse ()
 {
@@ -32,12 +34,38 @@
 + (HTTPSpamassResponse *)responseWithPath:(NSString *)filePath forConnection:(HTTPConnection *)connection
 {
 	HTTPSpamassResponse *response = [[HTTPSpamassResponse alloc] init];
+	NSString *email = [SMAppDelegate randomEmailAddress];
 	
+	response.connection = connection;
+	response.theOffset = 0;
+	response.dataBuffer = [[NSMutableData alloc] init];
+	response->mIsDone = TRUE;
+	
+	NSMutableString *output = [[NSMutableString alloc] init];
+	[output appendString:@"<html><head><title>"];
+	[output appendString:email];
+	[output appendString:@"</title></head><body>"];
+	[output appendString:@"Please do not spam me at: <a href=\"mailto:"];
+	[output appendString:email];
+	[output appendString:@"\">"];
+	[output appendString:email];
+	[output appendString:@"</a>. Thank you for your cooperation."];
+	[output appendString:@"<br>\n<br>\n"];
+	[output appendString:[SMAppDelegate randomWords]];
+	[output appendString:@"</body></html>"];
+	[response.dataBuffer appendBytes:output.UTF8String length:[output lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
+	
+	NSString *addr = [connection->asyncSocket connectedHost];
+	uint16_t port = [connection->asyncSocket connectedPort];
+	
+	NSLog(@"%s.. %@ for %@:%hu", __PRETTY_FUNCTION__, email, addr, port);
+	
+	/*
 	response.filePath = [filePath copy];
 	response.connection = connection;
 	response.theOffset = 0;
 	response.dataBuffer = [[NSMutableData alloc] init];
-	response->mIsDone = FALSE;;
+	response->mIsDone = FALSE;
 	
 	filePath = [filePath stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"/"]];
 	
@@ -133,6 +161,7 @@
 		NSLog(@"%s.. more data [offset=%lu, length=%lu]", __PRETTY_FUNCTION__, response.theOffset, response.dataBuffer.length);
 		[connection responseHasAvailableData:response];
 	}];
+	*/
 	
 	return response;
 }
@@ -225,7 +254,6 @@
  */
 - (void)connectionDidClose
 {
-	NSLog(@"%s.. connection closed! [offset=%lu, length=%lu]", __PRETTY_FUNCTION__, self.theOffset, self.dataBuffer.length);
 	self.connection = nil;
 }
 

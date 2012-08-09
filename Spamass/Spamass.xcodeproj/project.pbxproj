@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		F91F5BCD15D2E35A004C5ECB /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F91F5BCC15D2E35A004C5ECB /* libz.dylib */; };
+		F93D639A15D431DA00A40815 /* NSString+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = F93D639915D431DA00A40815 /* NSString+Additions.m */; };
+		F93D639D15D4485700A40815 /* other in Resources */ = {isa = PBXBuildFile; fileRef = F93D639C15D4485700A40815 /* other */; };
 		F9C251D015D15292005D1834 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9C251CF15D15292005D1834 /* Cocoa.framework */; };
 		F9C251DA15D15292005D1834 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F9C251D815D15292005D1834 /* InfoPlist.strings */; };
 		F9C251DC15D15292005D1834 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C251DB15D15292005D1834 /* main.m */; };
@@ -49,10 +51,15 @@
 		F9C2527E15D20308005D1834 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = F9C2527315D20308005D1834 /* README.txt */; };
 		F9C2528115D2057F005D1834 /* HTTPSpamassResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */; };
 		F9C2528415D29E11005D1834 /* NSMutableArray+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */; };
+		F9C2529915D324D4005D1834 /* SMMapViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C2529815D324D4005D1834 /* SMMapViewController.m */; };
+		F9C2529C15D32562005D1834 /* world in Resources */ = {isa = PBXBuildFile; fileRef = F9C2529B15D32562005D1834 /* world */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		F91F5BCC15D2E35A004C5ECB /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		F93D639815D431DA00A40815 /* NSString+Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Additions.h"; sourceTree = "<group>"; };
+		F93D639915D431DA00A40815 /* NSString+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Additions.m"; sourceTree = "<group>"; };
+		F93D639C15D4485700A40815 /* other */ = {isa = PBXFileReference; lastKnownFileType = folder; name = other; path = ../../other; sourceTree = "<group>"; };
 		F9C251CB15D15292005D1834 /* Spamass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spamass.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9C251CF15D15292005D1834 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		F9C251D215D15292005D1834 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -145,6 +152,9 @@
 		F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HTTPSpamassResponse.m; path = ../../HTTPServer/Responses/HTTPSpamassResponse.m; sourceTree = "<group>"; };
 		F9C2528215D29E10005D1834 /* NSMutableArray+Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray+Additions.h"; sourceTree = "<group>"; };
 		F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+Additions.m"; sourceTree = "<group>"; };
+		F9C2529715D324D4005D1834 /* SMMapViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SMMapViewController.h; sourceTree = "<group>"; };
+		F9C2529815D324D4005D1834 /* SMMapViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SMMapViewController.m; sourceTree = "<group>"; };
+		F9C2529B15D32562005D1834 /* world */ = {isa = PBXFileReference; lastKnownFileType = folder; name = world; path = ../../world; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -198,6 +208,8 @@
 		F9C251D515D15292005D1834 /* Spamass */ = {
 			isa = PBXGroup;
 			children = (
+				F93D639815D431DA00A40815 /* NSString+Additions.h */,
+				F93D639915D431DA00A40815 /* NSString+Additions.m */,
 				F9C251E115D15292005D1834 /* SMAppDelegate.h */,
 				F9C251E215D15292005D1834 /* SMAppDelegate.m */,
 				F9C2521715D1C34D005D1834 /* SMEmail.h */,
@@ -206,12 +218,14 @@
 				F9C2521B15D1C662005D1834 /* SMSocket.m */,
 				F9C2527F15D2057F005D1834 /* HTTPSpamassResponse.h */,
 				F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */,
+				F9C2528215D29E10005D1834 /* NSMutableArray+Additions.h */,
+				F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */,
+				F9C2529715D324D4005D1834 /* SMMapViewController.h */,
+				F9C2529815D324D4005D1834 /* SMMapViewController.m */,
 				F9C251E415D15292005D1834 /* MainMenu.xib */,
 				F9C251F915D1571A005D1834 /* leveldb */,
 				F9C2522815D202B0005D1834 /* HTTPServer */,
 				F9C251D615D15292005D1834 /* Supporting Files */,
-				F9C2528215D29E10005D1834 /* NSMutableArray+Additions.h */,
-				F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */,
 			);
 			path = Spamass;
 			sourceTree = "<group>";
@@ -219,6 +233,8 @@
 		F9C251D615D15292005D1834 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				F93D639C15D4485700A40815 /* other */,
+				F9C2529B15D32562005D1834 /* world */,
 				F9C251D715D15292005D1834 /* Spamass-Info.plist */,
 				F9C251D815D15292005D1834 /* InfoPlist.strings */,
 				F9C251DB15D15292005D1834 /* main.m */,
@@ -417,6 +433,8 @@
 				F9C2527415D20308005D1834 /* About.txt in Resources */,
 				F9C2527615D20308005D1834 /* About.txt in Resources */,
 				F9C2527E15D20308005D1834 /* README.txt in Resources */,
+				F9C2529C15D32562005D1834 /* world in Resources */,
+				F93D639D15D4485700A40815 /* other in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -458,6 +476,8 @@
 				F9C2527D15D20308005D1834 /* DispatchQueueLogFormatter.m in Sources */,
 				F9C2528115D2057F005D1834 /* HTTPSpamassResponse.m in Sources */,
 				F9C2528415D29E11005D1834 /* NSMutableArray+Additions.m in Sources */,
+				F9C2529915D324D4005D1834 /* SMMapViewController.m in Sources */,
+				F93D639A15D431DA00A40815 /* NSString+Additions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

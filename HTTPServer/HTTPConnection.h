@@ -36,7 +36,6 @@
 @interface HTTPConnection : NSObject
 {
 	dispatch_queue_t connectionQueue;
-	GCDAsyncSocket *asyncSocket;
 	HTTPConfig *config;
 	
 	BOOL started;
@@ -62,6 +61,9 @@
 	UInt64 requestChunkSizeReceived;
   
 	NSMutableArray *responseDataSizes;
+	
+@public
+	GCDAsyncSocket *asyncSocket;
 }
 
 - (id)initWithAsyncSocket:(GCDAsyncSocket *)newSocket configuration:(HTTPConfig *)aConfig;

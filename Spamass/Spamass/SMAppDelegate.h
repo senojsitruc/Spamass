@@ -19,4 +19,14 @@
  */
 + (void)emailsForAddress:(NSString *)address withBlock:(void (^)(SMEmail*))handler;
 
+/**
+ *
+ */
++ (NSString *)randomEmailAddress;
+
+/**
+ *
+ */
++ (NSString *)randomWords;
+
 @end

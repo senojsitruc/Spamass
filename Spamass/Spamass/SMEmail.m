@@ -26,6 +26,7 @@
 @synthesize headers = mHeaders;
 @synthesize lastHeader = mLastHeader;
 @synthesize isInHeaders = mIsInHeaders;
+@synthesize data = mData;
 
 /**
  *
@@ -38,6 +39,7 @@
 	if (self) {
 		mRecipients = [[NSMutableArray alloc] init];
 		mHeaders = [[NSMutableDictionary alloc] init];
+		mData = [[NSMutableData alloc] init];
 	}
 	
 	return self;

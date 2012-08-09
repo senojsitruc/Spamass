@@ -10,5 +10,6 @@
 
 int main(int argc, char *argv[])
 {
+	srandomdev();
 	return NSApplicationMain(argc, (const char **)argv);
 }

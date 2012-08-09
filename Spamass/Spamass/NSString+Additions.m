@@ -8,11 +8,19 @@
 
 #import "NSString+Additions.h"
 
+static char *gAlphaNumeric = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
 @implementation NSString (Additions)
 
-- (NSString *)stringByTrimmingLeadingAndFollowingWhitespace
++ (id)randomStringOfLength:(NSUInteger)length
 {
-	NSRange leading = [
+	int i = 0;
+	NSMutableString *str = [NSMutableString stringWithCapacity:length];
+	
+	for (i = 0; i < length; ++i)
+		[str appendFormat:@"%c", gAlphaNumeric[random() % 62]];
+	
+	return str;
 }
 
 @end

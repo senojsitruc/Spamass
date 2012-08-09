@@ -19,6 +19,7 @@
 @property (nonatomic, strong) NSMutableDictionary *headers;
 @property (nonatomic, strong) NSString *lastHeader;
 @property (readwrite, assign) BOOL isInHeaders;
+@property (readwrite, strong) NSMutableData *data;
 
 /**
  *

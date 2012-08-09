@@ -10,4 +10,6 @@
 
 @interface NSString (Additions)
 
++ (id)randomStringOfLength:(NSUInteger)length;
+
 @end
