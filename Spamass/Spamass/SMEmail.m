@@ -71,6 +71,8 @@
 {
 	NSMutableString *prefix = [[NSMutableString alloc] initWithCapacity:100];
 	
+	[prefix appendString:[mRecipients objectAtIndex:0]];
+	[prefix appendString:@"__"];
 	[prefix appendString:mSocketId];
 	[prefix appendString:@"__"];
 	[prefix appendString:mSerial];

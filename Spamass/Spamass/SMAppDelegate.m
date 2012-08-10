@@ -242,8 +242,92 @@ done:
 	char *path_ptr = path_str;
 	const char *socketid = _socketId.UTF8String;
 	
-	if (_socketId.length != 39 || _serial.length != 6)
-		return nil;
+	// we can receive the socketid and serial from the user, so both values are suspect. make sure
+	// that they are of the form we're expecting and not in fact some file path exploit.
+	//
+	// socketId = YYYYMMDDHHMMSSSSS-XXX.XXX.XXX.XXX-XXXXX (39 bytes)
+	// serial = XXXXXX (6 bytes)
+	{
+		const char *socketid_ptr = socketid;
+		const char *serial_ptr = _serial.UTF8String;
+		
+		// socket id
+		{
+			if (_socketId.length != 39 || _serial.length != 6)
+				return nil;
+			
+			// YYYYMMDDHHMMSSSSS (17 bytes, all digits)
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			
+			// "-"
+			if (*socketid_ptr != '-') return nil; else socketid_ptr++;
+			
+			// XXX (first dotted quad)
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			
+			// "."
+			if (*socketid_ptr != '.') return nil; else socketid_ptr++;
+			
+			// XXX (second dotted quad)
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			
+			// "."
+			if (*socketid_ptr != '.') return nil; else socketid_ptr++;
+			
+			// XXX (third dotted quad)
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			
+			// "."
+			if (*socketid_ptr != '.') return nil; else socketid_ptr++;
+			
+			// XXX (fourth dotted quad)
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			
+			// "-"
+			if (*socketid_ptr != '-') return nil; else socketid_ptr++;
+			
+			// XXXXX (port number)
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+			if (*socketid_ptr < '0' || *socketid_ptr > '9') return nil; else socketid_ptr++;
+		}
+		
+		// serial
+		{
+			if (*serial_ptr < '0' || *serial_ptr > '9') return nil; else serial_ptr++;
+			if (*serial_ptr < '0' || *serial_ptr > '9') return nil; else serial_ptr++;
+			if (*serial_ptr < '0' || *serial_ptr > '9') return nil; else serial_ptr++;
+			if (*serial_ptr < '0' || *serial_ptr > '9') return nil; else serial_ptr++;
+			if (*serial_ptr < '0' || *serial_ptr > '9') return nil; else serial_ptr++;
+			if (*serial_ptr < '0' || *serial_ptr > '9') return nil; else serial_ptr++;
+		}
+	}
 	
 	strcpy(path_ptr, "/Volumes/StoreX/Spamass/Record/");
 	path_ptr = path_str + strlen(path_str);

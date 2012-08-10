@@ -19,7 +19,7 @@
 {
 	HTTPEmailViewResponse *response = [[HTTPEmailViewResponse alloc] init];
 	NSDictionary *args = [response parseCgiParams:filePath];
-	NSString *socketId=nil, *serial=nil;
+	NSString *address=nil, *socketId=nil, *serial=nil;
 	
 	// initialize the response
 	response.filePath = filePath;
@@ -33,7 +33,7 @@
 	{
 		NSArray *parts = [[args objectForKey:@"e"] componentsSeparatedByString:@"__"];
 		
-		if (parts.count != 2) {
+		if (parts.count != 3) {
 			NSMutableString *output = [[NSMutableString alloc] init];
 			[output appendString:@"<html><head><title>Hello.</title></head><body>"];
 			[output appendString:@"Not a valid request. [101]"];
@@ -43,8 +43,9 @@
 			return response;
 		}
 		
-		socketId = [parts objectAtIndex:0];
-		serial = [parts objectAtIndex:1];
+		address = [parts objectAtIndex:0];
+		socketId = [parts objectAtIndex:1];
+		serial = [parts objectAtIndex:2];
 	}
 	
 	NSString *emailPath = [SMAppDelegate pathWithSocketId:socketId serial:serial mkdir:FALSE];
@@ -65,7 +66,7 @@
 	{
 		NSMutableString *output = [[NSMutableString alloc] init];
 		[output appendString:@"<html><head><title>"];
-		[output appendString:@"Hello."];
+		[output appendString:address];
 		[output appendString:@"</title></head><body>"];
 		[output appendString:@"<table border=1 cellspacing=0 cellspacing=0><tr><td>"];
 		[output appendString:@"<table border=0 cellpadding=3 cellspacing=10><tr><td><pre>"];
