@@ -29,4 +29,10 @@
  */
 + (NSString *)randomWords;
 
+/**
+ *
+ */
++ (NSString *)pathForEmail:(SMEmail *)email mkdir:(BOOL)mkdir;
++ (NSString *)pathWithSocketId:(NSString *)socketId serial:(NSString *)serial mkdir:(BOOL)mkdir;
+
 @end

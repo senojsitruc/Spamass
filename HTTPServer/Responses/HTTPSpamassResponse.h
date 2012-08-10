@@ -12,7 +12,18 @@
 @class HTTPConnection;
 
 @interface HTTPSpamassResponse : NSObject <HTTPResponse>
+{
+	BOOL mIsDone;
+	NSUInteger mResultCount;
+}
+
+@property (nonatomic, strong) NSString *filePath;
+@property (nonatomic, weak) HTTPConnection *connection;
+@property (readwrite, assign) NSUInteger theOffset;
+@property (nonatomic, strong) NSMutableData *dataBuffer;
 
 + (NSObject<HTTPResponse> *)responseWithPath:(NSString *)filePath forConnection:(HTTPConnection *)connection;
+
+- (NSDictionary *)parseCgiParams:(NSString *)filePath;
 
 @end

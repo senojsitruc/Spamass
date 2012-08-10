@@ -7,11 +7,11 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "HTTPResponse.h"
+#import "HTTPSpamassResponse.h"
 
 @class HTTPConnection;
 
-@interface HTTPMainPageResponse : NSObject <HTTPResponse>
+@interface HTTPMainPageResponse : HTTPSpamassResponse
 
 + (HTTPMainPageResponse *)responseWithPath:(NSString *)filePath forConnection:(HTTPConnection *)connection;
 

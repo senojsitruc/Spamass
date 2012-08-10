@@ -12,6 +12,7 @@
 		F93D639D15D4485700A40815 /* other in Resources */ = {isa = PBXBuildFile; fileRef = F93D639C15D4485700A40815 /* other */; };
 		F93D63A015D49F1B00A40815 /* HTTPEmailSearchResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F93D639F15D49F1B00A40815 /* HTTPEmailSearchResponse.m */; };
 		F93D63A315D49F8F00A40815 /* HTTPMainPageResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F93D63A215D49F8F00A40815 /* HTTPMainPageResponse.m */; };
+		F93D63A615D5378A00A40815 /* HTTPEmailViewResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = F93D63A515D5378A00A40815 /* HTTPEmailViewResponse.m */; };
 		F9C251D015D15292005D1834 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9C251CF15D15292005D1834 /* Cocoa.framework */; };
 		F9C251DA15D15292005D1834 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F9C251D815D15292005D1834 /* InfoPlist.strings */; };
 		F9C251DC15D15292005D1834 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C251DB15D15292005D1834 /* main.m */; };
@@ -66,6 +67,8 @@
 		F93D639F15D49F1B00A40815 /* HTTPEmailSearchResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPEmailSearchResponse.m; sourceTree = "<group>"; };
 		F93D63A115D49F8F00A40815 /* HTTPMainPageResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPMainPageResponse.h; sourceTree = "<group>"; };
 		F93D63A215D49F8F00A40815 /* HTTPMainPageResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPMainPageResponse.m; sourceTree = "<group>"; };
+		F93D63A415D5378A00A40815 /* HTTPEmailViewResponse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HTTPEmailViewResponse.h; sourceTree = "<group>"; };
+		F93D63A515D5378A00A40815 /* HTTPEmailViewResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HTTPEmailViewResponse.m; sourceTree = "<group>"; };
 		F9C251CB15D15292005D1834 /* Spamass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spamass.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9C251CF15D15292005D1834 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		F9C251D215D15292005D1834 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -214,8 +217,6 @@
 		F9C251D515D15292005D1834 /* Spamass */ = {
 			isa = PBXGroup;
 			children = (
-				F93D639815D431DA00A40815 /* NSString+Additions.h */,
-				F93D639915D431DA00A40815 /* NSString+Additions.m */,
 				F9C251E115D15292005D1834 /* SMAppDelegate.h */,
 				F9C251E215D15292005D1834 /* SMAppDelegate.m */,
 				F9C2521715D1C34D005D1834 /* SMEmail.h */,
@@ -224,12 +225,16 @@
 				F9C2521B15D1C662005D1834 /* SMSocket.m */,
 				F9C2527F15D2057F005D1834 /* HTTPSpamassResponse.h */,
 				F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */,
-				F93D639E15D49F1B00A40815 /* HTTPEmailSearchResponse.h */,
-				F93D639F15D49F1B00A40815 /* HTTPEmailSearchResponse.m */,
 				F93D63A115D49F8F00A40815 /* HTTPMainPageResponse.h */,
 				F93D63A215D49F8F00A40815 /* HTTPMainPageResponse.m */,
+				F93D639E15D49F1B00A40815 /* HTTPEmailSearchResponse.h */,
+				F93D639F15D49F1B00A40815 /* HTTPEmailSearchResponse.m */,
+				F93D63A415D5378A00A40815 /* HTTPEmailViewResponse.h */,
+				F93D63A515D5378A00A40815 /* HTTPEmailViewResponse.m */,
 				F9C2528215D29E10005D1834 /* NSMutableArray+Additions.h */,
 				F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */,
+				F93D639815D431DA00A40815 /* NSString+Additions.h */,
+				F93D639915D431DA00A40815 /* NSString+Additions.m */,
 				F9C2529715D324D4005D1834 /* SMMapViewController.h */,
 				F9C2529815D324D4005D1834 /* SMMapViewController.m */,
 				F9C251E415D15292005D1834 /* MainMenu.xib */,
@@ -490,6 +495,7 @@
 				F93D639A15D431DA00A40815 /* NSString+Additions.m in Sources */,
 				F93D63A015D49F1B00A40815 /* HTTPEmailSearchResponse.m in Sources */,
 				F93D63A315D49F8F00A40815 /* HTTPMainPageResponse.m in Sources */,
+				F93D63A615D5378A00A40815 /* HTTPEmailViewResponse.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

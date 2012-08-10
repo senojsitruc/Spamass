@@ -13,18 +13,6 @@
 #import "NSString+Additions.h"
 #import "GCDAsyncSocket.h"
 
-@interface HTTPEmailSearchResponse ()
-{
-	BOOL mIsDone;
-	NSUInteger mResultCount;
-}
-
-@property (nonatomic, strong) NSString *filePath;
-@property (nonatomic, weak) HTTPConnection *connection;
-@property (readwrite, assign) NSUInteger theOffset;
-@property (nonatomic, strong) NSMutableData *dataBuffer;
-@end
-
 @implementation HTTPEmailSearchResponse
 
 /**
@@ -34,7 +22,7 @@
 + (HTTPEmailSearchResponse *)responseWithPath:(NSString *)filePath forConnection:(HTTPConnection *)connection
 {
 	HTTPEmailSearchResponse *response = [[HTTPEmailSearchResponse alloc] init];
-	NSMutableDictionary *args = [[NSMutableDictionary alloc] init];
+	NSDictionary *args = [response parseCgiParams:filePath];
 	__block NSUInteger emailCount = 0;
 	
 	// initialize the response
@@ -43,17 +31,6 @@
 	response.theOffset = 0;
 	response.dataBuffer = [[NSMutableData alloc] init];
 	response->mIsDone = FALSE;
-	
-	// parse cgi params
-	{
-		NSArray *pairs = [[filePath substringFromIndex:3] componentsSeparatedByString:@"&"];
-		
-		for (NSString *pair in pairs) {
-			NSArray *parts = [pair componentsSeparatedByString:@"="];
-			if (parts.count == 2)
-				[args setObject:[[parts objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] forKey:[[parts objectAtIndex:0] lowercaseString]];
-		}
-	}
 	
 	NSLog(@"%s.. request='%@'", __PRETTY_FUNCTION__, filePath);
 	
@@ -130,9 +107,11 @@
 			[output appendString:@"<tr bgcolor=\""];
 			[output appendString:color];
 			[output appendString:@"\">"];
-			[output appendString:@"<td>"];
+			[output appendString:@"<td><a href=\"v?e="];
+			[output appendString:email.emailId];
+			[output appendString:@"\">"];
 			[output appendString:[[NSNumber numberWithInteger:response->mResultCount] stringValue]];
-			[output appendString:@"</td>"];
+			[output appendString:@"</a></td>"];
 			[output appendString:@"<td>"];
 			[output appendString:email.sender];
 			[output appendString:@"</td>"];
@@ -146,7 +125,7 @@
 			[output appendString:[[NSNumber numberWithInteger:email.dataSize] stringValue]];
 			[output appendString:@"</td>"];
 			[output appendString:@"<td>"];
-			[output appendString:date];
+			[output appendString:[date substringToIndex:14]];
 			[output appendString:@"</td>"];
 			[output appendString:@"<td>"];
 			[output appendString:addr];
@@ -163,97 +142,6 @@
 	}];
 	
 	return response;
-}
-
-
-
-
-
-#pragma mark - HTTPResponse - Required
-
-/**
- *
- *
- */
-- (UInt64)contentLength
-{
-	return 0;
-}
-
-/**
- *
- *
- */
-- (UInt64)offset
-{
-	return self.theOffset;
-}
-
-/**
- *
- *
- */
-- (void)setOffset:(UInt64)offset
-{
-	self.theOffset = offset;
-}
-
-/**
- *
- *
- */
-- (NSData *)readDataOfLength:(NSUInteger)length
-{
-	if (self.theOffset >= self.dataBuffer.length)
-		return nil;
-	
-	length = MIN(length, self.dataBuffer.length - self.theOffset);
-	NSData *data = [NSData dataWithBytes:self.dataBuffer.bytes+self.theOffset length:length];
-	self.theOffset += length;
-	
-	return data;
-}
-
-/**
- *
- *
- */
-- (BOOL)isDone
-{
-	return mIsDone && self.theOffset >= [self.dataBuffer length];
-}
-
-
-
-
-
-#pragma mark - HTTPResponse - Optional
-
-/**
- *
- *
- */
-- (BOOL)isChunked
-{
-	return TRUE;
-}
-
-/**
- *
- *
- */
-- (BOOL)isAsynchronous
-{
-	return TRUE;
-}
-
-/**
- *
- *
- */
-- (void)connectionDidClose
-{
-	self.connection = nil;
 }
 
 @end

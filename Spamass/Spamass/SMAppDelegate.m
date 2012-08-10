@@ -213,62 +213,7 @@ done:
 	
 	[mDb setString:@"1" forKey:[[email.recipients objectAtIndex:0] stringByAppendingString:@"__99999999999999999-999.999.999.999-99999__999999"]];
 	
-	{
-		char path_str[1000] = { 0 };
-		char *path_ptr = path_str;
-		const char *socketid = email.socketId.UTF8String;
-		
-		strcpy(path_ptr, "/Volumes/StoreX/Spamass/Record/");
-		path_ptr = path_str + strlen(path_str);
-		
-		// yyyy
-		*path_ptr = socketid[0]; path_ptr++;
-		*path_ptr = socketid[1]; path_ptr++;
-		*path_ptr = socketid[2]; path_ptr++;
-		*path_ptr = socketid[3]; path_ptr++;
-		*path_ptr = '/';     path_ptr++;
-		mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
-		
-		// mm
-		*path_ptr = socketid[4]; path_ptr++;
-		*path_ptr = socketid[5]; path_ptr++;
-		*path_ptr = '/';     path_ptr++;
-		mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
-		
-		// dd
-		*path_ptr = socketid[6]; path_ptr++;
-		*path_ptr = socketid[7]; path_ptr++;
-		*path_ptr = '/';     path_ptr++;
-		mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
-		
-		// hh
-		*path_ptr = socketid[8]; path_ptr++;
-		*path_ptr = socketid[9]; path_ptr++;
-		*path_ptr = '/';     path_ptr++;
-		mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
-		
-		// mm
-		*path_ptr = socketid[10]; path_ptr++;
-		*path_ptr = socketid[11]; path_ptr++;
-		*path_ptr = '/';     path_ptr++;
-		mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
-		
-		// ss
-		*path_ptr = socketid[12]; path_ptr++;
-		*path_ptr = socketid[13]; path_ptr++;
-		*path_ptr = '/';     path_ptr++;
-		mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
-		
-		// file
-		strcpy(path_ptr, socketid);
-		path_ptr += strlen(socketid);
-		
-		// .socket
-		strcpy(path_ptr, ".email");
-		path_ptr += 7;
-		
-		emailPath = [[NSString alloc] initWithCString:path_str encoding:NSUTF8StringEncoding];
-	}
+	emailPath = [[self class] pathForEmail:email mkdir:TRUE];
 	
 	if (emailPath)
 		[email.data writeToFile:emailPath atomically:TRUE];
@@ -276,6 +221,84 @@ done:
 	NSLog(@"%s.. email is done! [sender='%@', size=%lu, subject='%@', path='%@']", __PRETTY_FUNCTION__, email.sender, email.dataSize, subject, emailPath);
 	
 	socket.email = nil;
+}
+
+/**
+ *
+ *
+ */
++ (NSString *)pathForEmail:(SMEmail *)email mkdir:(BOOL)_mkdir
+{
+	return [self pathWithSocketId:email.socketId serial:email.serial mkdir:_mkdir];
+}
+
+/**
+ *
+ *
+ */
++ (NSString *)pathWithSocketId:(NSString *)_socketId serial:(NSString *)_serial mkdir:(BOOL)_mkdir
+{
+	char path_str[1000] = { 0 };
+	char *path_ptr = path_str;
+	const char *socketid = _socketId.UTF8String;
+	
+	if (_socketId.length != 39 || _serial.length != 6)
+		return nil;
+	
+	strcpy(path_ptr, "/Volumes/StoreX/Spamass/Record/");
+	path_ptr = path_str + strlen(path_str);
+	
+	// yyyy
+	*path_ptr = socketid[0]; path_ptr++;
+	*path_ptr = socketid[1]; path_ptr++;
+	*path_ptr = socketid[2]; path_ptr++;
+	*path_ptr = socketid[3]; path_ptr++;
+	*path_ptr = '/';     path_ptr++;
+	if (_mkdir) mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
+	
+	// mm
+	*path_ptr = socketid[4]; path_ptr++;
+	*path_ptr = socketid[5]; path_ptr++;
+	*path_ptr = '/';     path_ptr++;
+	if (_mkdir) mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
+	
+	// dd
+	*path_ptr = socketid[6]; path_ptr++;
+	*path_ptr = socketid[7]; path_ptr++;
+	*path_ptr = '/';     path_ptr++;
+	if (_mkdir) mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
+	
+	// hh
+	*path_ptr = socketid[8]; path_ptr++;
+	*path_ptr = socketid[9]; path_ptr++;
+	*path_ptr = '/';     path_ptr++;
+	if (_mkdir) mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
+	
+	// mm
+	*path_ptr = socketid[10]; path_ptr++;
+	*path_ptr = socketid[11]; path_ptr++;
+	*path_ptr = '/';     path_ptr++;
+	if (_mkdir) mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
+	
+	// ss
+	*path_ptr = socketid[12]; path_ptr++;
+	*path_ptr = socketid[13]; path_ptr++;
+	*path_ptr = '/';     path_ptr++;
+	if (_mkdir) mkdir(path_str, S_IRWXU | S_IRGRP | S_IXGRP | S_IRWXO | S_IXOTH);
+	
+	// file
+	strcpy(path_ptr, socketid);
+	path_ptr += strlen(socketid);
+	*path_ptr = '_'; path_ptr++;
+	*path_ptr = '_'; path_ptr++;
+	strcpy(path_ptr, _serial.UTF8String);
+	path_ptr += _serial.length;
+	
+	// .socket
+	strcpy(path_ptr, ".email");
+	path_ptr += 7;
+	
+	return [[NSString alloc] initWithCString:path_str encoding:NSUTF8StringEncoding];
 }
 
 /**

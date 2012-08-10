@@ -25,6 +25,7 @@
  *
  */
 - (NSString *)dbprefix;
+- (NSString *)emailId;
 
 /**
  *

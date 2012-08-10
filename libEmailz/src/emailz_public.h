@@ -88,7 +88,6 @@ typedef struct emailz_s *emailz_t;
 
 /**
  *
- *
  */
 emailz_t emailz_create ();
 void emailz_destroy (emailz_t);
@@ -99,11 +98,15 @@ void emailz_record_enable (emailz_t, bool, char*);
 
 /**
  *
- *
  */
 void emailz_socket_set_smtp_handler (emailz_socket_t, emailz_smtp_handler_t);
 void emailz_socket_set_header_handler (emailz_socket_t, emailz_header_handler_t);
 void emailz_socket_set_data_handler (emailz_socket_t, emailz_data_handler_t);
 char* emailz_socket_get_name (emailz_socket_t);
+
+/**
+ *
+ */
+static char* emailz_print_number (char*, uint64_t, int);
 
 #endif

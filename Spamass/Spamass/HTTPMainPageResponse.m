@@ -13,18 +13,6 @@
 #import "NSString+Additions.h"
 #import "GCDAsyncSocket.h"
 
-@interface HTTPMainPageResponse ()
-{
-	BOOL mIsDone;
-	NSUInteger mResultCount;
-}
-
-@property (nonatomic, strong) NSString *filePath;
-@property (nonatomic, weak) HTTPConnection *connection;
-@property (readwrite, assign) NSUInteger theOffset;
-@property (nonatomic, strong) NSMutableData *dataBuffer;
-@end
-
 @implementation HTTPMainPageResponse
 
 /**
@@ -44,6 +32,10 @@
 	[output appendString:@"<html><head><title>"];
 	[output appendString:@"Hello."];
 	[output appendString:@"</title></head><body>"];
+	[output appendString:@"<form action=s method=get>"];
+	[output appendString:@"<input type=text size=40 placeholder=\"example@spamass.net\" name=\"e\" />"];
+	[output appendString:@"<input type=submit value=\"View\" />"];
+	[output appendString:@"</form><br><br>"];
 	[output appendString:@"Please do not spam me at:<br>\n<br>\n"];
 	
 	NSString *addr = [connection->asyncSocket connectedHost];
@@ -66,97 +58,6 @@
 	[response.dataBuffer appendBytes:output.UTF8String length:[output lengthOfBytesUsingEncoding:NSUTF8StringEncoding]];
 	
 	return response;
-}
-
-
-
-
-
-#pragma mark - HTTPResponse - Required
-
-/**
- *
- *
- */
-- (UInt64)contentLength
-{
-	return 0;
-}
-
-/**
- *
- *
- */
-- (UInt64)offset
-{
-	return self.theOffset;
-}
-
-/**
- *
- *
- */
-- (void)setOffset:(UInt64)offset
-{
-	self.theOffset = offset;
-}
-
-/**
- *
- *
- */
-- (NSData *)readDataOfLength:(NSUInteger)length
-{
-	if (self.theOffset >= self.dataBuffer.length)
-		return nil;
-	
-	length = MIN(length, self.dataBuffer.length - self.theOffset);
-	NSData *data = [NSData dataWithBytes:self.dataBuffer.bytes+self.theOffset length:length];
-	self.theOffset += length;
-	
-	return data;
-}
-
-/**
- *
- *
- */
-- (BOOL)isDone
-{
-	return mIsDone && self.theOffset >= [self.dataBuffer length];
-}
-
-
-
-
-
-#pragma mark - HTTPResponse - Optional
-
-/**
- *
- *
- */
-- (BOOL)isChunked
-{
-	return TRUE;
-}
-
-/**
- *
- *
- */
-- (BOOL)isAsynchronous
-{
-	return TRUE;
-}
-
-/**
- *
- *
- */
-- (void)connectionDidClose
-{
-	self.connection = nil;
 }
 
 @end

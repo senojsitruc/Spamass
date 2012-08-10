@@ -12,19 +12,11 @@
 #import "SMEmail.h"
 #import "NSString+Additions.h"
 #import "GCDAsyncSocket.h"
-#import "HTTPEmailSearchResponse.h"
 #import "HTTPMainPageResponse.h"
+#import "HTTPEmailSearchResponse.h"
+#import "HTTPEmailViewResponse.h"
 
 @interface HTTPSpamassResponse ()
-{
-	BOOL mIsDone;
-	NSUInteger mResultCount;
-}
-
-@property (nonatomic, strong) NSString *filePath;
-@property (nonatomic, weak) HTTPConnection *connection;
-@property (readwrite, assign) NSUInteger theOffset;
-@property (nonatomic, strong) NSMutableData *dataBuffer;
 @end
 
 @implementation HTTPSpamassResponse
@@ -37,10 +29,44 @@
 {
 	NSLog(@"%s.. filePath='%@'", __PRETTY_FUNCTION__, filePath);
 	
-	if ([filePath hasPrefix:@"/s?e="])
-		return [HTTPEmailSearchResponse responseWithPath:filePath forConnection:(HTTPConnection *)connection];
-	else
-		return [HTTPMainPageResponse responseWithPath:filePath forConnection:(HTTPConnection *)connection];
+	@try {
+		if ([filePath hasPrefix:@"/s?"])
+			return [HTTPEmailSearchResponse responseWithPath:filePath forConnection:(HTTPConnection *)connection];
+		else if ([filePath hasPrefix:@"/v?"])
+			return [HTTPEmailViewResponse responseWithPath:filePath forConnection:(HTTPConnection *)connection];
+		else
+			return [HTTPMainPageResponse responseWithPath:filePath forConnection:(HTTPConnection *)connection];
+	}
+	@catch (NSException *e) {
+		NSLog(@"%s.. name = %@", __PRETTY_FUNCTION__, [e name]);
+		NSLog(@"%s.. reason = %@", __PRETTY_FUNCTION__, [e reason]);
+		NSLog(@"%s.. userInfo = %@", __PRETTY_FUNCTION__, [e userInfo]);
+		NSLog(@"%s.. %@", __PRETTY_FUNCTION__, [e callStackSymbols]);
+	}
+}
+
+
+
+
+
+#pragma mark - Helpers
+
+/**
+ *
+ *
+ */
+- (NSDictionary *)parseCgiParams:(NSString *)filePath
+{
+	NSMutableDictionary *args = [[NSMutableDictionary alloc] init];
+	NSArray *pairs = [[filePath substringFromIndex:3] componentsSeparatedByString:@"&"];
+	
+	for (NSString *pair in pairs) {
+		NSArray *parts = [pair componentsSeparatedByString:@"="];
+		if (parts.count == 2)
+			[args setObject:[[parts objectAtIndex:1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] forKey:[[parts objectAtIndex:0] lowercaseString]];
+	}
+	
+	return args;
 }
 
 
