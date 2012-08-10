@@ -17,7 +17,7 @@
 /**
  *
  */
-+ (void)emailsForAddress:(NSString *)address withBlock:(void (^)(SMEmail*))handler;
++ (void)emailsForAddress:(NSString *)address withBlock:(BOOL (^)(SMEmail*))handler;
 
 /**
  *

@@ -383,7 +383,7 @@ done:
  *
  *
  */
-+ (void)emailsForAddress:(NSString *)address withBlock:(void (^)(SMEmail*))handler
++ (void)emailsForAddress:(NSString *)address withBlock:(BOOL (^)(SMEmail*))handler
 {
 	[gAppDelegate emailsForAddress:address withBlock:handler];
 }
@@ -392,7 +392,7 @@ done:
  *
  *
  */
-- (void)emailsForAddress:(NSString *)address withBlock:(void (^)(SMEmail*))handler
+- (void)emailsForAddress:(NSString *)address withBlock:(BOOL (^)(SMEmail*))handler
 {
 	handler = [handler copy];
 	
@@ -419,7 +419,8 @@ done:
 					break;
 				
 				if (email && (![email.socketId isEqualToString:partSocket] || ![email.serial isEqualToString:partSerial])) {
-					handler(email);
+					if (!handler(email))
+						break;
 					email = nil;
 				}
 				
@@ -457,18 +458,33 @@ done:
 	NSArray *firstNames = (random()%2) ? gMaleNames : gFemaleNames;
 	NSArray *lastNames = gLastNames;
 	NSMutableString *email = [[NSMutableString alloc] init];
-	BOOL dot = (random()%2);
+	BOOL dot=FALSE, dash=FALSE;
+	
+	switch (random()%3) {
+		case 0:
+			dot = TRUE;
+			break;
+		case 1:
+			dash = TRUE;
+			break;
+		case 2:
+			break;
+	}
 	
 	[email appendString:[firstNames objectAtIndex:(random()%firstNames.count)]];
 	
 	if (dot)
 		[email appendString:@"."];
+	else if (dash)
+		[email appendString:@"-"];
 	
 	if (random()%2) {
 		[email appendString:[firstNames objectAtIndex:(random()%firstNames.count)]];
 		
 		if (dot)
 			[email appendString:@"."];
+		else if (dash)
+			[email appendString:@"-"];
 	}
 	
 	[email appendString:[lastNames objectAtIndex:(random()%lastNames.count)]];

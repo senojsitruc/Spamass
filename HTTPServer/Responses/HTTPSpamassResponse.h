@@ -13,6 +13,6 @@
 
 @interface HTTPSpamassResponse : NSObject <HTTPResponse>
 
-+ (HTTPSpamassResponse *)responseWithPath:(NSString *)filePath forConnection:(HTTPConnection *)connection;
++ (NSObject<HTTPResponse> *)responseWithPath:(NSString *)filePath forConnection:(HTTPConnection *)connection;
 
 @end

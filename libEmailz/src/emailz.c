@@ -557,6 +557,10 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 					command = EMAILZ_SMTP_COMMAND_RSET;
 				else if (0 == strncmp((char *)socket->cmnd, "NOOP", 4))
 					command = EMAILZ_SMTP_COMMAND_NOOP;
+				else if (0 == strncmp((char *)socket->cmnd, "HELP", 4))
+					command = EMAILZ_SMTP_COMMAND_HELP;
+				else if (0 == strncmp((char *)socket->cmnd, "VRFY", 4))
+					command = EMAILZ_SMTP_COMMAND_VRFY;
 				else if (0 == strncmp((char *)socket->cmnd, "STARTTLS", 8))
 					command = EMAILZ_SMTP_COMMAND_STARTTLS;
 				else
@@ -570,47 +574,46 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 			
 			switch (command) {
 				case EMAILZ_SMTP_COMMAND_HELO:
-					//XLOG("[%s:%hu] HELO", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "250 mail.spamass.net\r\n", -1, NULL);
 					break;
 					
 				case EMAILZ_SMTP_COMMAND_EHLO:
-					//XLOG("[%s:%hu] EHLO", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "250-mail.spamass.net in the house\r\n250-SIZE 12345678\r\n250-8BITMIME\r\n250-STARTTLS\r\n250 ENHANCEDSTATUSCODES\r\n", -1, NULL);
 					break;
 					
 				case EMAILZ_SMTP_COMMAND_MAIL:
-					//XLOG("[%s:%hu] MAIL", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "250 Ok\r\n", -1, NULL);
 					break;
 					
 				case EMAILZ_SMTP_COMMAND_RCPT:
-					//XLOG("[%s:%hu] RCPT", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "250 Recipient ok\r\n", -1, NULL);
 					break;
 					
 				case EMAILZ_SMTP_COMMAND_DATA:
-					//XLOG("[%s:%hu] DATA", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "354 Enter mail, end with \".\" on a line by itself\r\n", -1, NULL);
 					break;
 					
 				case EMAILZ_SMTP_COMMAND_QUIT:
-					//XLOG("[%s:%hu] QUIT", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "221 closing connection\r\n", -1, ^(bool done, dispatch_data_t data, int error) { emailz_socket_stop(socket); });
 					break;
 					
 				case EMAILZ_SMTP_COMMAND_RSET:
-					//XLOG("[%s:%hu] RSET", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "250 Ok\r\n", -1, NULL);
 					break;
 					
 				case EMAILZ_SMTP_COMMAND_NOOP:
-					//XLOG("[%s:%hu] NOOP", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "250 Ok\r\n", -1, NULL);
 					break;
 					
+				case EMAILZ_SMTP_COMMAND_HELP:
+					emailz_socket_handle_write(socket, "214-2.3.0 Available commands:\r\n214-2.3.0\r\n214-2.3.0 HELO, EHLO, MAIL FROM, RCPT TO, DATA\r\n214-2.3.0 QUIT, RSET, NOOP, HELP, VRFY, STARTTLS\r\n214 2.3.0\r\n", -1, NULL);
+					break;
+					
+				case EMAILZ_SMTP_COMMAND_VRFY:
+					emailz_socket_handle_write(socket, "252 2.1.5 It doesn't hurt to try\r\n", -1, NULL);
+					break;
+					
 				case EMAILZ_SMTP_COMMAND_STARTTLS:
-					//XLOG("[%s:%hu] STARTTLS", socket->addrstr, socket->port);
 					emailz_socket_handle_write(socket, "220 Ready to start TLS\r\n", -1, NULL);
 					emailz_socket_setup_ssl(socket);
 					break;
