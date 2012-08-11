@@ -194,7 +194,7 @@ factotum
 festschrift
 jato unit
 materteral
-arête
+arete
 skepsis
 micawber
 jitney
@@ -204,14 +204,14 @@ tumid
 pule
 meed
 oscitate
-oolert (also owlert)
+oolert
 sartorial
 vitiate
 chiliad
-aestival (also: estival)
-sylva (also: silva)
+aestival
+sylva
 stat
-anomie (also: anomy)
+anomie
 cheval-de-frise
 pea-souper
 autochthon
