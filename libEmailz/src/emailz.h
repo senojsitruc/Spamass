@@ -242,7 +242,6 @@ typedef struct emailz_s *emailz_t;
 
 /**
  *
- *
  */
 emailz_t emailz_create ();
 void emailz_destroy (emailz_t);
@@ -252,10 +251,14 @@ void emailz_set_socket_handler (emailz_t, emailz_socket_handler_t);
 
 /**
  *
- *
  */
 void emailz_socket_set_smtp_handler (emailz_socket_t, emailz_smtp_handler_t, uint64_t);
 void emailz_socket_set_header_handler (emailz_socket_t, emailz_header_handler_t);
 void emailz_socket_set_data_handler (emailz_socket_t, emailz_data_handler_t);
+
+/**
+ *
+ */
+uint64_t emailz_current_time_millis ();
 
 #endif /* libEmailz_emailz_h */

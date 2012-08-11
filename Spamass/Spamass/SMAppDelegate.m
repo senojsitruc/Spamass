@@ -45,6 +45,8 @@ static NSArray *gWords;
 	
 	SMMapViewController *mMapController;
 	NSSound *mTinkSound;
+	
+	APLevelDB *mOriginDb;
 }
 @end
 
@@ -104,6 +106,15 @@ static NSArray *gWords;
 		
 		gWords = [tmp allKeys];
 	}
+}
+
+/**
+ *
+ *
+ */
++ (SMAppDelegate *)sharedInstance
+{
+	return gAppDelegate;
 }
 
 /**
@@ -431,6 +442,11 @@ done:
 		return;
 	}
 	
+	if (nil == (mOriginDb = [APLevelDB levelDBWithPath:@"/Users/cjones/Desktop/Spamass-Origin.db" error:nil])) {
+		NSLog(@"%s.. failed to open origin database!", __PRETTY_FUNCTION__);
+		return;
+	}
+	
 #if 0
 	{
 		APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mGeocoderDb];
@@ -588,6 +604,19 @@ done:
 		
 		handler(nil);
 	});
+}
+
+/**
+ *
+ *
+ */
+- (void)recordEmailAddress:(NSString *)email withOrigin:(NSString *)ipaddr
+{
+	uint64_t timestamp = emailz_current_time_millis();
+	NSData *data = [NSData dataWithBytes:&timestamp length:sizeof(timestamp)];
+	
+	[mOriginDb setString:email forKey:[ipaddr stringByAppendingString:@"__email"]];
+	[mOriginDb setData:data forKey:[ipaddr stringByAppendingString:@"__timestamp"]];
 }
 
 /**

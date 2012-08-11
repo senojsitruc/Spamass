@@ -17,12 +17,18 @@
 /**
  *
  */
++ (SMAppDelegate *)sharedInstance;
+
+/**
+ *
+ */
 + (void)emailsForAddress:(NSString *)address withBlock:(BOOL (^)(SMEmail*))handler;
 
 /**
  *
  */
 + (NSString *)randomEmailAddress;
+- (void)recordEmailAddress:(NSString *)email withOrigin:(NSString *)ipaddr;
 
 /**
  *

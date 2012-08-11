@@ -111,5 +111,6 @@ char* emailz_socket_get_addrstr (emailz_socket_t);
  *
  */
 static char* emailz_print_number (char*, uint64_t, int);
+uint64_t emailz_current_time_millis();
 
 #endif

@@ -38,7 +38,6 @@ static OSStatus emailz_sslsocket_write (SSLConnectionRef connection, const void 
 static OSStatus emailz_sslsocket_read (SSLConnectionRef connection, void *data, size_t *datalen);
 
 static void emailz_addrstr (void*, int, char*);
-static uint64_t emailz_current_time_millis ();
 static char* emailz_print_number (char*, uint64_t, int);
 
 
@@ -417,7 +416,7 @@ emailz_socket_start (emailz_socket_t socket, bool record)
 			socket->inbytes += size;
 			socket->emailz->bytes_rcvd += size;
 			
-//		XLOG("[%s:%hu] received %lu bytes [bytes_in=%llu, bytes_out=%llu]", socket->addrstr, socket->port, dispatch_data_get_size(data), socket->inbytes, socket->outbytes);
+			//XLOG("[%s:%hu] received %lu bytes [bytes_in=%llu, bytes_out=%llu]", socket->addrstr, socket->port, dispatch_data_get_size(data), socket->inbytes, socket->outbytes);
 			
 			emailz_socket_handle_read(socket, done, data);
 		}
