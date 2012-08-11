@@ -431,7 +431,7 @@ done:
 		return;
 	}
 	
-	/*
+#if 0
 	{
 		APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mGeocoderDb];
 		NSString *key = nil;
@@ -439,7 +439,7 @@ done:
 		while (nil != (key = [iter nextKey]))
 			NSLog(@"%s.. key='%@', value='%@'", __PRETTY_FUNCTION__, key, [mGeocoderDb stringForKey:key]);
 	}
-	*/
+#endif
 	
 	mTinkSound = [NSSound soundNamed:@"Tink"];
 	mGeocoder = [[SMGeocoder alloc] initWithCacheDb:mGeocoderDb regionDb:mRegionDb];

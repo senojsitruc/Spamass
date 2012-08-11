@@ -273,8 +273,8 @@ struct geocoder_region
 }
 
 /**
- * First check our database. Then call hostip.info. Then call google. And don't forget to add a 
- * cache entry.
+ * First check our database. Then call hostip.info. If hostip.info can't help us, then look at the
+ * country for the ip address assignment. Then call google. And don't forget to add a cache entry.
  */
 - (void)__geocode:(NSString *)ipaddr handler:(SMGeocoderHandler)handler
 {
@@ -392,7 +392,7 @@ struct geocoder_region
 			if (address.length == 0)
 				return;
 			
-			NSLog(@"%s.. asking google for location [%@]", __PRETTY_FUNCTION__, address);
+			//NSLog(@"%s.. asking google for location [%@]", __PRETTY_FUNCTION__, address);
 		}
 		
 		NSURL *url = [NSURL URLWithString:[@"https://maps.googleapis.com/maps/api/geocode/json?sensor=true&address=" stringByAppendingString:[address stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
@@ -428,6 +428,8 @@ struct geocoder_region
 		[mCacheDb setString:code forKey:[ipaddr stringByAppendingString:@"__code"]];
 		[mCacheDb setString:[[NSNumber numberWithDouble:latitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__latitude"]];
 		[mCacheDb setString:[[NSNumber numberWithDouble:longitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__longitude"]];
+		
+		//NSLog(@"%s.. cached %f, %f for %@", __PRETTY_FUNCTION__, latitude, longitude, ipaddr);
 	}
 	
 	handler(latitude, longitude, city, state, country, code);
