@@ -78,7 +78,7 @@ emailz_destroy (emailz_t emailz)
 bool
 emailz_start (emailz_t emailz)
 {
-	emailz->listener_queue = dispatch_queue_create("net.spamass.emailz.listener-queue", NULL);
+	emailz->listener_queue = dispatch_queue_create("net.spamass.emailz.listener-queue", DISPATCH_QUEUE_SERIAL);
 	emailz->socket_queue = dispatch_queue_create("net.spamass.emailz.socket-queue", DISPATCH_QUEUE_CONCURRENT);
 	
 	// ssl root certificate
@@ -268,6 +268,7 @@ emailz_socket_create (emailz_t emailz)
 	socket->emailz = emailz;
 	socket->queue = emailz->socket_queue;
 	socket->connect_time = emailz_current_time_millis();
+	socket->stop = false;
 	
 	return socket;
 }
@@ -405,6 +406,9 @@ emailz_socket_start (emailz_socket_t socket, bool record)
 	dispatch_io_set_low_water(socket->channel, 1);
 	
 	dispatch_io_read(socket->channel, 0, SIZE_MAX, socket->queue, ^ (bool done, dispatch_data_t data, int error) {
+		if (socket->stop)
+			return;
+		
 		if (data) {
 			size_t size = dispatch_data_get_size(data);
 			
@@ -436,6 +440,8 @@ emailz_socket_stop (emailz_socket_t socket)
 	if (!socket)
 		return false;
 	
+	socket->stop = true;
+	
 	if (socket->socketfd) {
 		if (socket->sslcontext && socket->channel)
 			SSLClose(socket->sslcontext);
@@ -462,6 +468,8 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 	if (!socket)
 		return;
 	
+	// if we have an ssl connection (or we're in the process of doing an ssl handshake), read and
+	// decrypt data (in the former case) and continue the handshake process (in the latter case).
 	if (socket->sslcontext) {
 		OSStatus oserr;
 		unsigned char buffer[1000];
@@ -510,6 +518,8 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 			}
 		}
 	}
+	
+	// we're not using ssl so just read data and append it to our read buffer
 	else {
 		emailz_socket_record(socket, data);
 		dispatch_data_t indata = socket->indata;
@@ -517,26 +527,50 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 		dispatch_release(indata);
 	}
 	
+	// while our in buffer isn't empty and while we're able to read a complete line (or in the case of
+	// not being able to find a newline, the amount of available data exceeds our maximum line length)
+	// process the line.
+	//
+	// each line is either an smtp command or if we're in a "DATA" state, it's part of the data
+	// segment of an email (or the "." terminating the data segment).
+	//
 	while (0 != dispatch_data_get_size(socket->indata) && emailz_socket_read_line(socket)) {
+		// we're reading the data segment of the email. if the line is simply a "." then we've reached
+		// the end of the data segment. otherwise, handle the email data. in both cases we call the
+		// data_handler and let them know what's going on. we don't actually retain any of this data.
 		if (EMAILZ_SMTP_COMMAND_DATA == socket->state) {
 			if (socket->linelen == 3 && socket->line[0] == '.' && socket->line[1] == '\r' && socket->line[2] == '\n')  {
 				if (socket->data_handler)
 					socket->data_handler(socket->emailz, socket->context, 0, NULL, true);
 				socket->state = EMAILZ_SMTP_COMMAND_NONE;
 				emailz_socket_handle_write(socket, "250 AAA14672 Message accepted for delivery\r\n", -1, NULL);
-				//XLOG("[%s:%hu] received an email", socket->addrstr, socket->port);
+//			XLOG("[%s:%hu] received an email", socket->addrstr, socket->port);
 			}
-			else if (socket->data_handler)
-				socket->data_handler(socket->emailz, socket->context, socket->linelen, socket->line, false);
+			else {
+				socket->email_size += socket->linelen;
+				
+				if (socket->data_handler)
+					socket->data_handler(socket->emailz, socket->context, socket->linelen, socket->line, (socket->email_size > EMAILZ_MAX_INDATA_SIZE));
+				
+				if (socket->email_size > EMAILZ_MAX_INDATA_SIZE) {
+					emailz_socket_stop(socket);
+					break;
+				}
+			}
 		}
+		
+		// we're not in the data segment, so parse the command off the front of the line and see how we
+		// should best handle it.
 		else {
 			emailz_socket_read_command(socket);
 			
+			// we weren't able to parse a command
 			if (socket->cmndlen == 0)
 				break;
 			
 			emailz_smtp_command_t command = EMAILZ_SMTP_COMMAND_NONE;
 			
+			// figure out which command we've received and give us a more mangeable data type
 			{
 				if (0 == strncmp((char *)socket->cmnd, "HELO", 4))
 					command = EMAILZ_SMTP_COMMAND_HELO;
@@ -564,11 +598,17 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 					XLOG("[%s:%hu] unsupported command, %s", socket->addrstr, socket->port, socket->cmnd);
 			}
 			
+			// note the socket state - that is, which command we're currently processing
 			socket->state = command;
 			
+			// if there's an smtp_handler, and if this command is part of the mask set for the handler,
+			// then call the callback so that they know what's going on.
 			if (socket->smtp_handler && (command & socket->smtp_handler_mask))
 				socket->smtp_handler(socket->emailz, socket->context, command, socket->line+socket->lineoff);
 			
+			// respond to the command. in most cases this is just an "ok" message. if the caller dares to
+			// try to start an ssl connection, then fire up our ssl code and get that going. if we don't
+			// support the command, tell the client.
 			switch (command) {
 				case EMAILZ_SMTP_COMMAND_HELO:
 					emailz_socket_handle_write(socket, "250 mail.spamass.net\r\n", -1, NULL);
@@ -587,6 +627,7 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 					break;
 					
 				case EMAILZ_SMTP_COMMAND_DATA:
+					socket->email_size = 0;
 					emailz_socket_handle_write(socket, "354 Enter mail, end with \".\" on a line by itself\r\n", -1, NULL);
 					break;
 					

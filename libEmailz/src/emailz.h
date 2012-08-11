@@ -36,7 +36,7 @@
 
 #define EMAILZ_MAX_LINE_SIZE    32000
 #define EMAILZ_MAX_CMND_SIZE    50
-#define EMAILZ_MAX_INDATA_SIZE  32000
+#define EMAILZ_MAX_INDATA_SIZE  (1024 * 1024)
 
 struct emailz_s;
 struct emailz_mail_s;
@@ -98,7 +98,7 @@ struct emailz_socket_s
 	/**
 	 * daddy
 	 */
-	struct emailz_s *emailz;                   //
+	struct emailz_s *emailz;                   // daddy
 	
 	/**
 	 * user settings
@@ -129,7 +129,8 @@ struct emailz_socket_s
 	/**
 	 * read state
 	 */
-	emailz_smtp_command_t state;               //
+	emailz_smtp_command_t state;               // the last smtp command handled on this socket
+	uint64_t email_size;                       // used to enforce EMAILZ_MAX_INDATA_SIZE
 	unsigned char line[EMAILZ_MAX_LINE_SIZE];  //
 	unsigned char cmnd[EMAILZ_MAX_CMND_SIZE];  //
 	size_t lineoff;                            //
@@ -143,6 +144,7 @@ struct emailz_socket_s
 	struct sockaddr_in addr;                   // socket address
 	uint16_t port;                             // remote port number
 	char addrstr[46];                          // ipv4/6 address string
+	bool stop;                                 // stop the presses
 	
 	/**
 	 * crypto
