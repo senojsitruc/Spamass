@@ -182,6 +182,43 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F93D63A715D5A78400A40815 /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				F9C2528215D29E10005D1834 /* NSMutableArray+Additions.h */,
+				F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */,
+				F93D639815D431DA00A40815 /* NSString+Additions.h */,
+				F93D639915D431DA00A40815 /* NSString+Additions.m */,
+			);
+			name = Categories;
+			sourceTree = "<group>";
+		};
+		F93D63A815D5A78B00A40815 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				F9C2521715D1C34D005D1834 /* SMEmail.h */,
+				F9C2521815D1C34D005D1834 /* SMEmail.m */,
+				F9C2521A15D1C662005D1834 /* SMSocket.h */,
+				F9C2521B15D1C662005D1834 /* SMSocket.m */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
+		F93D63A915D5A79F00A40815 /* HTTP Responses */ = {
+			isa = PBXGroup;
+			children = (
+				F9C2527F15D2057F005D1834 /* HTTPSpamassResponse.h */,
+				F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */,
+				F93D63A115D49F8F00A40815 /* HTTPMainPageResponse.h */,
+				F93D63A215D49F8F00A40815 /* HTTPMainPageResponse.m */,
+				F93D639E15D49F1B00A40815 /* HTTPEmailSearchResponse.h */,
+				F93D639F15D49F1B00A40815 /* HTTPEmailSearchResponse.m */,
+				F93D63A415D5378A00A40815 /* HTTPEmailViewResponse.h */,
+				F93D63A515D5378A00A40815 /* HTTPEmailViewResponse.m */,
+			);
+			name = "HTTP Responses";
+			sourceTree = "<group>";
+		};
 		F9C251C015D15291005D1834 = {
 			isa = PBXGroup;
 			children = (
@@ -217,24 +254,11 @@
 		F9C251D515D15292005D1834 /* Spamass */ = {
 			isa = PBXGroup;
 			children = (
+				F93D63A715D5A78400A40815 /* Categories */,
+				F93D63A815D5A78B00A40815 /* Model */,
+				F93D63A915D5A79F00A40815 /* HTTP Responses */,
 				F9C251E115D15292005D1834 /* SMAppDelegate.h */,
 				F9C251E215D15292005D1834 /* SMAppDelegate.m */,
-				F9C2521715D1C34D005D1834 /* SMEmail.h */,
-				F9C2521815D1C34D005D1834 /* SMEmail.m */,
-				F9C2521A15D1C662005D1834 /* SMSocket.h */,
-				F9C2521B15D1C662005D1834 /* SMSocket.m */,
-				F9C2527F15D2057F005D1834 /* HTTPSpamassResponse.h */,
-				F9C2528015D2057F005D1834 /* HTTPSpamassResponse.m */,
-				F93D63A115D49F8F00A40815 /* HTTPMainPageResponse.h */,
-				F93D63A215D49F8F00A40815 /* HTTPMainPageResponse.m */,
-				F93D639E15D49F1B00A40815 /* HTTPEmailSearchResponse.h */,
-				F93D639F15D49F1B00A40815 /* HTTPEmailSearchResponse.m */,
-				F93D63A415D5378A00A40815 /* HTTPEmailViewResponse.h */,
-				F93D63A515D5378A00A40815 /* HTTPEmailViewResponse.m */,
-				F9C2528215D29E10005D1834 /* NSMutableArray+Additions.h */,
-				F9C2528315D29E11005D1834 /* NSMutableArray+Additions.m */,
-				F93D639815D431DA00A40815 /* NSString+Additions.h */,
-				F93D639915D431DA00A40815 /* NSString+Additions.m */,
 				F9C2529715D324D4005D1834 /* SMMapViewController.h */,
 				F9C2529815D324D4005D1834 /* SMMapViewController.m */,
 				F9C251E415D15292005D1834 /* MainMenu.xib */,

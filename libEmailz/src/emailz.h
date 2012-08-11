@@ -57,18 +57,18 @@ typedef enum
 //
 typedef enum
 {
-	EMAILZ_SMTP_COMMAND_NONE,
-	EMAILZ_SMTP_COMMAND_HELO,
-	EMAILZ_SMTP_COMMAND_EHLO,
-	EMAILZ_SMTP_COMMAND_MAIL,
-	EMAILZ_SMTP_COMMAND_RCPT,
-	EMAILZ_SMTP_COMMAND_DATA,
-	EMAILZ_SMTP_COMMAND_QUIT,
-	EMAILZ_SMTP_COMMAND_RSET,
-	EMAILZ_SMTP_COMMAND_NOOP,
-	EMAILZ_SMTP_COMMAND_HELP,
-	EMAILZ_SMTP_COMMAND_VRFY,
-	EMAILZ_SMTP_COMMAND_STARTTLS
+	EMAILZ_SMTP_COMMAND_NONE     = 0,
+	EMAILZ_SMTP_COMMAND_HELO     = (1 <<  1),
+	EMAILZ_SMTP_COMMAND_EHLO     = (1 <<  2),
+	EMAILZ_SMTP_COMMAND_MAIL     = (1 <<  3),
+	EMAILZ_SMTP_COMMAND_RCPT     = (1 <<  4),
+	EMAILZ_SMTP_COMMAND_DATA     = (1 <<  5),
+	EMAILZ_SMTP_COMMAND_QUIT     = (1 <<  6),
+	EMAILZ_SMTP_COMMAND_RSET     = (1 <<  7),
+	EMAILZ_SMTP_COMMAND_NOOP     = (1 <<  8),
+	EMAILZ_SMTP_COMMAND_HELP     = (1 <<  9),
+	EMAILZ_SMTP_COMMAND_VRFY     = (1 << 10),
+	EMAILZ_SMTP_COMMAND_STARTTLS = (1 << 11)
 } emailz_smtp_command_t;
 
 //
@@ -108,6 +108,7 @@ struct emailz_socket_s
 	emailz_smtp_handler_t smtp_handler;        // smtp command handler
 	emailz_header_handler_t header_handler;    // email header handler
 	emailz_data_handler_t data_handler;        // email data handler
+	uint64_t smtp_handler_mask;                // mask for smtp commands
 	
 	/**
 	 * gcd
@@ -241,17 +242,17 @@ typedef struct emailz_s *emailz_t;
  *
  */
 emailz_t emailz_create ();
-void emailz_destroy (emailz_t emailz);
-bool emailz_start (emailz_t emailz);
-bool emailz_stop (emailz_t emailz);
-void emailz_set_socket_handler (emailz_t emailz, emailz_socket_handler_t handler);
+void emailz_destroy (emailz_t);
+bool emailz_start (emailz_t);
+bool emailz_stop (emailz_t);
+void emailz_set_socket_handler (emailz_t, emailz_socket_handler_t);
 
 /**
  *
  *
  */
-void emailz_socket_set_smtp_handler (emailz_socket_t socket, emailz_smtp_handler_t handler);
-void emailz_socket_set_header_handler (emailz_socket_t socket, emailz_header_handler_t handler);
-void emailz_socket_set_data_handler (emailz_socket_t socket, emailz_data_handler_t handler);
+void emailz_socket_set_smtp_handler (emailz_socket_t, emailz_smtp_handler_t, uint64_t);
+void emailz_socket_set_header_handler (emailz_socket_t, emailz_header_handler_t);
+void emailz_socket_set_data_handler (emailz_socket_t, emailz_data_handler_t);
 
 #endif /* libEmailz_emailz_h */

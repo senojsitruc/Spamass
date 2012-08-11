@@ -9,6 +9,14 @@
 #import "SMMapViewController.h"
 
 @interface SMMapViewController ()
+{
+	NSUInteger mGridWidth;
+	NSUInteger mGridHeight;
+	NSUInteger mImageWidth;
+	NSUInteger mImageHeight;
+	
+	NSMutableArray *mImageViews;
+}
 
 @end
 
@@ -34,34 +42,68 @@
  */
 - (void)loadView
 {
-	NSUInteger gridWidth=16, gridHeight=16;
-	NSUInteger imageWidth=75, imageHeight=75;
-	NSView *worldView = [[NSView alloc] initWithFrame:NSMakeRect(0., 0., (gridWidth*imageWidth), (gridHeight*imageHeight))];
+	mGridWidth = 16, mGridHeight = 10;
+	mImageWidth = mImageHeight = 256;
+	mImageViews = [[NSMutableArray alloc] init];
+	
+	NSView *worldView = [[NSView alloc] initWithFrame:NSMakeRect(0., 0., (mGridWidth*mImageWidth), (mGridHeight*mImageHeight))];
 	NSString *world = [[NSBundle mainBundle] pathForResource:@"world" ofType:@""];
 	NSFileManager *fileManager = [[NSFileManager alloc] init];
 	NSArray *files = [fileManager contentsOfDirectoryAtPath:world error:nil];
 	
-	for (NSString *file in files) {
-		NSString *name = [file stringByDeletingPathExtension];
-		NSArray *parts = [name componentsSeparatedByString:@"-"];
+	// filter out the non world view image files then sort the files by their grid location - top
+	// left through bottom right.
+	{
+		NSMutableArray *filtered = [[NSMutableArray alloc] init];
 		
-		if ([parts count] != 3) {
-			NSLog(@"%s.. invalid file name [%@]", __PRETTY_FUNCTION__, file);
-			continue;
-		}
+		[files enumerateObjectsUsingBlock:^ (id obj, NSUInteger ndx, BOOL *stop) {
+			NSString *file = (NSString *)obj;
+			NSString *name = [file stringByDeletingPathExtension];
+			NSArray *parts = [name componentsSeparatedByString:@"-"];
+			
+			if (parts.count == 3)
+				[filtered addObject:file];
+		}];
 		
-		NSUInteger imageY = [[parts objectAtIndex:1] integerValue];
-		NSUInteger imageX = [[parts objectAtIndex:2] integerValue];
-		NSData *data = [NSData dataWithContentsOfFile:[world stringByAppendingPathComponent:file]];
-		NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect((imageX*imageWidth), ((gridHeight-imageY-1)*imageHeight), imageWidth, imageHeight)];
-		NSImage *image = [[NSImage alloc] initWithData:data];
-		image.size = NSMakeSize(imageWidth, imageHeight);
-		imageView.image = image;
-		[worldView addSubview:imageView];
+		files = [filtered sortedArrayUsingComparator:^ NSComparisonResult (id obj1, id obj2) {
+			NSString *name1 = [(NSString *)obj1 stringByDeletingPathExtension];
+			NSString *name2 = [(NSString *)obj2 stringByDeletingPathExtension];
+			
+			NSArray *parts1 = [name1 componentsSeparatedByString:@"-"];
+			NSArray *parts2 = [name2 componentsSeparatedByString:@"-"];
+			
+			NSUInteger imageY1 = [[parts1 objectAtIndex:1] integerValue];
+			NSUInteger imageX1 = [[parts1 objectAtIndex:2] integerValue];
+			
+			NSUInteger imageY2 = [[parts2 objectAtIndex:1] integerValue];
+			NSUInteger imageX2 = [[parts2 objectAtIndex:2] integerValue];
+			
+			if (imageY1 > imageY2)
+				return NSOrderedDescending;
+			else if (imageY1 < imageY2)
+				return NSOrderedAscending;
+			else if (imageX1 > imageX2)
+				return NSOrderedDescending;
+			else if (imageX1 < imageX2)
+				return NSOrderedAscending;
+			else
+				return NSOrderedSame;
+		}];
 	}
 	
-	worldView.autoresizingMask = NSViewHeightSizable | NSViewWidthSizable;
-	worldView.autoresizesSubviews = TRUE;
+	[files enumerateObjectsUsingBlock:^ (id obj, NSUInteger ndx, BOOL *stop) {
+		NSString *file = (NSString *)obj;
+		NSData *data = [NSData dataWithContentsOfFile:[world stringByAppendingPathComponent:file]];
+		NSUInteger imageX = ndx % mGridWidth;
+		NSUInteger imageY = ndx / mGridWidth;
+		NSImageView *imageView = [[NSImageView alloc] initWithFrame:NSMakeRect((imageX*mImageWidth), ((mGridHeight-imageY-1)*mImageHeight), mImageWidth, mImageHeight)];
+		NSImage *image = [[NSImage alloc] initWithData:data];
+		image.size = NSMakeSize(mImageWidth, mImageHeight);
+		imageView.image = image;
+		[worldView addSubview:imageView];
+		[mImageViews addObject:imageView];
+	}];
+	
 	self.view = worldView;
 }
 
@@ -71,15 +113,18 @@
  */
 - (void)setMarkerAtLongitude:(double)longitude latitude:(double)latitude
 {
-	NSUInteger longitudeX = (NSUInteger)(1200 * (180 + longitude) / 360.) % 1200 + 0;
+	NSSize windowSize = self.view.window.frame.size;
+	NSUInteger mapWidth = MIN(windowSize.width, windowSize.height);
+	NSUInteger mapHeight = MIN(windowSize.width, windowSize.height);
+	NSUInteger longitudeX = (NSUInteger)(mapWidth * (180 + longitude) / 360.) % mapWidth + 0;
 	
 	latitude = latitude * M_PI / 180.; // degrees to radians
 	latitude = log(tan(latitude/2.) + (M_PI/4.));
-	latitude = (1200. / 2.) - (1200. * latitude / (2. * M_PI));
+	latitude = (mapHeight / 2.) - (mapWidth * latitude / (2. * M_PI));
 	
 	
 	
-	NSUInteger latitudeY = 1200. - latitude;
+	NSUInteger latitudeY = mapWidth - latitude;
 	
 	NSLog(@"%s.. longitudeX=%lu, latitudeY=%lu", __PRETTY_FUNCTION__, longitudeX, latitudeY);
 	
@@ -128,4 +173,60 @@
 	
 }
 
+
+
+
+
+#pragma mark - NSWindowDelegate
+
+- (void)sizeToFit
+{
+	NSSize windowSize = self.view.window.frame.size;
+	NSUInteger imageWidth, imageHeight;
+	
+	imageWidth = imageHeight = MIN(windowSize.width / mGridWidth, windowSize.height / mGridHeight);
+	
+	[mImageViews enumerateObjectsUsingBlock:^ (id obj, NSUInteger ndx, BOOL *stop) {
+		NSImageView *imageView = (NSImageView *)obj;
+		NSUInteger imageX = ndx % mGridWidth;
+		NSUInteger imageY = ndx / mGridWidth;
+		imageView.frame = NSMakeRect((imageX*imageWidth), ((mGridHeight-imageY-1)*imageHeight), imageWidth, imageHeight);
+	}];
+	
+	[self.view setNeedsDisplay:TRUE];
+}
+
 @end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

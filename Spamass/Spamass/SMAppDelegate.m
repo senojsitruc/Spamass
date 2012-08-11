@@ -33,6 +33,8 @@ static NSArray *gWords;
 	emailz_data_handler_t mDataHandler;
 	
 	NSCharacterSet *mEmailSplitSet;
+	
+	SMMapViewController *mMapController;
 }
 @end
 
@@ -462,7 +464,7 @@ done:
 		if (EMAILZ_SOCKET_STATE_OPEN == state) {
 			SMSocket *socketObj = [[SMSocket alloc] init];
 			socketObj.socketId = [NSString stringWithCString:emailz_socket_get_name(socket) encoding:NSUTF8StringEncoding];
-			emailz_socket_set_smtp_handler(socket, mSmtpHandler);
+			emailz_socket_set_smtp_handler(socket, mSmtpHandler, EMAILZ_SMTP_COMMAND_MAIL | EMAILZ_SMTP_COMMAND_RCPT);
 			emailz_socket_set_data_handler(socket, mDataHandler);
 			*context = (__bridge_retained void *)socketObj;
 		}
@@ -476,12 +478,17 @@ done:
 	
 	// map
 	{
-		SMMapViewController *mapController = [[SMMapViewController alloc] init];
-		self.window.contentView = mapController.view;
-		self.window.minSize = NSMakeSize(1200, 1200);
-		self.window.maxSize = NSMakeSize(1200, 1200);
+		mMapController = [[SMMapViewController alloc] init];
+		self.window.contentView = mMapController.view;
+//	self.window.aspectRatio = NSMakeSize(4, 3);
+//	self.window.delegate = (SMMapViewController *)mapController.view;
+//	self.window.minSize = NSMakeSize(1200, 1200);
+//	self.window.maxSize = NSMakeSize(1200, 1200);
 		
-		[mapController setMarkerAtLongitude:-84. latitude:33.];
+		[[NSNotificationCenter defaultCenter] addObserver:mMapController selector:@selector(sizeToFit) name:NSWindowDidEndLiveResizeNotification object:self.window];
+		
+		[mMapController sizeToFit];
+		[mMapController setMarkerAtLongitude:-84. latitude:33.];
 	}
 	
 }

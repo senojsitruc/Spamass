@@ -569,7 +569,7 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 			
 			socket->state = command;
 			
-			if (socket->smtp_handler)
+			if (socket->smtp_handler && (command & socket->smtp_handler_mask))
 				socket->smtp_handler(socket->emailz, socket->context, command, socket->line+socket->lineoff);
 			
 			switch (command) {
@@ -984,7 +984,7 @@ emailz_socket_record_close (emailz_socket_t socket)
  *
  */
 void
-emailz_socket_set_smtp_handler (emailz_socket_t socket, emailz_smtp_handler_t handler)
+emailz_socket_set_smtp_handler (emailz_socket_t socket, emailz_smtp_handler_t handler, uint64_t smtp_mask)
 {
 	if (!socket)
 		return;
@@ -994,8 +994,10 @@ emailz_socket_set_smtp_handler (emailz_socket_t socket, emailz_smtp_handler_t ha
 		socket->smtp_handler = NULL;
 	}
 	
-	if (handler)
+	if (handler) {
 		socket->smtp_handler = (emailz_smtp_handler_t)Block_copy(handler);
+		socket->smtp_handler_mask = smtp_mask;
+	}
 }
 
 /**

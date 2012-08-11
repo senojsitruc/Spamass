@@ -11,5 +11,6 @@
 @interface SMMapViewController : NSViewController
 
 - (void)setMarkerAtLongitude:(double)longitude latitude:(double)latitude;
+- (void)sizeToFit;
 
 @end

@@ -107,7 +107,7 @@
 			[output appendString:@"<tr bgcolor=\""];
 			[output appendString:color];
 			[output appendString:@"\">"];
-			[output appendString:@"<td><a href=\"v?e="];
+			[output appendString:@"<td align=right><a href=\"v?e="];
 			[output appendString:email.emailId];
 			[output appendString:@"\">"];
 			[output appendString:[[NSNumber numberWithInteger:response->mResultCount] stringValue]];
@@ -121,17 +121,17 @@
 			[output appendString:@"<td>"];
 			[output appendString:[email.headers objectForKey:@"subject"]];
 			[output appendString:@"</td>"];
-			[output appendString:@"<td>"];
+			[output appendString:@"<td align=right>"];
 			[output appendString:[[NSNumber numberWithInteger:email.dataSize] stringValue]];
 			[output appendString:@"</td>"];
-			[output appendString:@"<td>"];
+			[output appendString:@"<td><code>"];
 			[output appendString:[date substringToIndex:14]];
-			[output appendString:@"</td>"];
-			[output appendString:@"<td>"];
+			[output appendString:@"</code></td>"];
+			[output appendString:@"<td><code>"];
 			[output appendString:addr];
 			[output appendString:@":"];
 			[output appendString:port];
-			[output appendString:@"</td>"];
+			[output appendString:@"</code></td>"];
 			[output appendString:@"</tr>\r\n"];
 			[response.dataBuffer appendBytes:output.UTF8String length:output.length];
 		}
