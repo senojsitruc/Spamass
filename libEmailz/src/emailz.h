@@ -36,7 +36,8 @@
 
 #define EMAILZ_MAX_LINE_SIZE    32000
 #define EMAILZ_MAX_CMND_SIZE    50
-#define EMAILZ_MAX_INDATA_SIZE  (1024 * 1024)
+#define EMAILZ_MAX_INDATA_SIZE  1048576
+#define EMAILZ_SOCKET_TIMEOUT   120000
 
 struct emailz_s;
 struct emailz_mail_s;

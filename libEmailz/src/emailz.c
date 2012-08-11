@@ -404,6 +404,7 @@ emailz_socket_start (emailz_socket_t socket, bool record)
 	});
 	
 	dispatch_io_set_low_water(socket->channel, 1);
+	dispatch_io_set_interval(socket->channel, 10000000000ull, DISPATCH_IO_STRICT_INTERVAL);
 	
 	dispatch_io_read(socket->channel, 0, SIZE_MAX, socket->queue, ^ (bool done, dispatch_data_t data, int error) {
 		if (socket->stop)
@@ -421,10 +422,10 @@ emailz_socket_start (emailz_socket_t socket, bool record)
 			emailz_socket_handle_read(socket, done, data);
 		}
 		
-		if (done || error) {
-			//socket->channel = NULL;
+		if (done || error)
 			emailz_socket_stop(socket);
-		}
+		else if (socket->last_read_time > emailz_current_time_millis() - EMAILZ_SOCKET_TIMEOUT)
+			emailz_socket_stop(socket);
 	});
 	
 	return true;
