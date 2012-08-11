@@ -245,9 +245,6 @@ emailz_handle_accept (emailz_t emailz, emailz_listener_t listener, int socketfd,
 	
 	//XLOG("[%s:%hu] new connection", socket->addrstr, socket->port);
 	
-	if (socket->socket_handler)
-		socket->socket_handler(emailz, socket, EMAILZ_SOCKET_STATE_OPEN, &socket->context);
-	
 	emailz_socket_start(socket, emailz->socket_record);
 	emailz_socket_handle_write(socket, "220 mail.spamass.net ESMTP\r\n", -1, NULL);
 }
@@ -421,7 +418,7 @@ emailz_socket_start (emailz_socket_t socket, bool record)
 		}
 		
 		if (done || error) {
-			socket->channel = NULL;
+			//socket->channel = NULL;
 			emailz_socket_stop(socket);
 		}
 	});
@@ -1049,6 +1046,19 @@ emailz_socket_get_name (emailz_socket_t socket)
 		return NULL;
 	else
 		return socket->record_name;
+}
+
+/**
+ *
+ *
+ */
+char *
+emailz_socket_get_addrstr (emailz_socket_t socket)
+{
+	if (!socket)
+		return NULL;
+	else
+		return socket->addrstr;
 }
 
 

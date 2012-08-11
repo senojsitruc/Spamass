@@ -238,6 +238,9 @@ NSString * const APLevelDBErrorDomain = @"APLevelDBErrorDomain";
 	{
 		mIter = db.db->NewIterator(leveldb::ReadOptions());
 		mIter->SeekToFirst();
+		
+		if (![self isValid])
+			return nil;
 	}
 	return self;
 }
@@ -252,6 +255,11 @@ NSString * const APLevelDBErrorDomain = @"APLevelDBErrorDomain";
 {
 	delete mIter;
 	mIter = NULL;
+}
+
+- (BOOL)isValid
+{
+	return mIter->Valid();
 }
 
 - (BOOL)seekToKey:(NSString *)key

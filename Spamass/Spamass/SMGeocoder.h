@@ -8,6 +8,20 @@
 
 #import <Foundation/Foundation.h>
 
+typedef void (^SMGeocoderHandler)(double, double, NSString*, NSString*, NSString*, NSString*);
+
+@class APLevelDB;
+
 @interface SMGeocoder : NSObject
+
+/**
+ *
+ */
+- (id)initWithDb:(APLevelDB *)db;
+
+/**
+ *
+ */
+- (void)geocode:(NSString *)ipaddr handler:(SMGeocoderHandler)handler;
 
 @end

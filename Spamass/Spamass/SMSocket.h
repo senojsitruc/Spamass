@@ -13,6 +13,7 @@
 @interface SMSocket : NSObject
 
 @property (nonatomic, strong) NSString *socketId;
+@property (nonatomic, strong) NSString *ipaddress;
 @property (nonatomic, strong) SMEmail *email;
 @property (readonly) NSUInteger emailCount;
 

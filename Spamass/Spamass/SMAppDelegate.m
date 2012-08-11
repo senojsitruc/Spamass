@@ -9,12 +9,14 @@
 #import "SMAppDelegate.h"
 #import "APLevelDB.h"
 #import "SMEmail.h"
+#import "SMGeocoder.h"
 #import "SMSocket.h"
 #import "HTTPServer.h"
 #import "SMMapViewController.h"
 #import <emailz_public.h>
 #import <dispatch/dispatch.h>
 #import <sys/stat.h>
+#import "NSThread+Additions.h"
 
 static SMAppDelegate *gAppDelegate;
 static NSArray *gMaleNames;
@@ -24,6 +26,12 @@ static NSArray *gWords;
 
 @interface SMAppDelegate ()
 {
+	/**
+	 * Geocode
+	 */
+	APLevelDB *mGeocoderDb;
+	SMGeocoder *mGeocoder;
+	
 	APLevelDB *mDb;
 	emailz_t mEmailz;
 	HTTPServer *mHttpServer;
@@ -407,27 +415,29 @@ done:
 	gAppDelegate = self;
 	
 	if (nil == (mDb = [APLevelDB levelDBWithPath:@"/Users/cjones/Desktop/Spamass-Email.db" error:nil])) {
-		NSLog(@"%s.. failed to open database!", __PRETTY_FUNCTION__);
+		NSLog(@"%s.. failed to open email database!", __PRETTY_FUNCTION__);
+		return;
+	}
+	
+	if (nil == (mGeocoderDb = [APLevelDB levelDBWithPath:@"/Users/cjones/Desktop/Spamass-Geocoder.db" error:nil])) {
+		NSLog(@"%s.. failed to open geocoder database!", __PRETTY_FUNCTION__);
 		return;
 	}
 	
 	/*
 	{
-		APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mDb];
+		APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mGeocoderDb];
 		NSString *key = nil;
 		
-		while (nil != (key = [iter nextKey])) {
-			NSLog(@"%s.. key='%@', value='%@'", __PRETTY_FUNCTION__, key, [mDb stringForKey:key]);
-		}
+		while (nil != (key = [iter nextKey]))
+			NSLog(@"%s.. key='%@', value='%@'", __PRETTY_FUNCTION__, key, [mGeocoderDb stringForKey:key]);
 	}
 	*/
 	
+	mGeocoder = [[SMGeocoder alloc] initWithDb:mGeocoderDb];
 	mHttpQueue = dispatch_queue_create("net.spamass.spamass-http", DISPATCH_QUEUE_CONCURRENT);
-	
 	[NSThread detachNewThreadSelector:@selector(startHttp) toTarget:self withObject:nil];
-	
 	mEmailSplitSet = [NSCharacterSet characterSetWithCharactersInString:@" <>,\r\n"];
-	
 	mEmailz = emailz_create();
 	emailz_record_enable(mEmailz, true, "/Volumes/StoreX/Spamass/Record/");
 	
@@ -463,37 +473,41 @@ done:
 	emailz_set_socket_handler(mEmailz, ^ (emailz_t emailz, emailz_socket_t socket, emailz_socket_state_t state, void **context) {
 		if (EMAILZ_SOCKET_STATE_OPEN == state) {
 			SMSocket *socketObj = [[SMSocket alloc] init];
+			socketObj.ipaddress = [NSString stringWithCString:emailz_socket_get_addrstr(socket) encoding:NSUTF8StringEncoding];
 			socketObj.socketId = [NSString stringWithCString:emailz_socket_get_name(socket) encoding:NSUTF8StringEncoding];
 			emailz_socket_set_smtp_handler(socket, mSmtpHandler, EMAILZ_SMTP_COMMAND_MAIL | EMAILZ_SMTP_COMMAND_RCPT);
 			emailz_socket_set_data_handler(socket, mDataHandler);
 			*context = (__bridge_retained void *)socketObj;
+			
+			[mGeocoder geocode:socketObj.ipaddress handler:^ (double latitude, double longitude, NSString *city, NSString *state, NSString *country, NSString *code) {
+				[[NSThread mainThread] performBlock:^{
+					[mMapController setMarkerAtLatitude:latitude
+																		longitude:longitude
+																		withLabel:[NSString stringWithFormat:@"%@ - %@", city, country]
+																			 forKey:socketObj.socketId];
+				}];
+			}];
 		}
 		else if (EMAILZ_SOCKET_STATE_CLOSE == state) {
-			(void)(__bridge_transfer SMSocket *)*context;
-			// TODO: update socket record in db for socket stats?
+			SMSocket *socket = (__bridge_transfer SMSocket *)*context;
+			
+			[[NSThread mainThread] performBlock:^{
+				[mMapController unsetMarkerForKey:socket.socketId];
+			}];
 		}
 	});
-	
-	emailz_start(mEmailz);
 	
 	// map
 	{
 		mMapController = [[SMMapViewController alloc] init];
 		self.window.contentView = mMapController.view;
-//	self.window.aspectRatio = NSMakeSize(4, 3);
-//	self.window.delegate = (SMMapViewController *)mapController.view;
-//	self.window.minSize = NSMakeSize(1200, 1200);
-//	self.window.maxSize = NSMakeSize(1200, 1200);
 		
 		[[NSNotificationCenter defaultCenter] addObserver:mMapController selector:@selector(sizeToFit) name:NSWindowDidEndLiveResizeNotification object:self.window];
 		
 		[mMapController sizeToFit];
-		[mMapController setMarkerAtLongitude:-83.178297 latitude:32.678125];
-		[mMapController setMarkerAtLongitude:25.912222 latitude:-24.658056];
-		[mMapController setMarkerAtLongitude:149.12444 latitude:-35.308056];
-		[mMapController setMarkerAtLongitude:24.9375 latitude:60.170833];
 	}
 	
+	emailz_start(mEmailz);
 }
 
 /**

@@ -8,12 +8,33 @@
 
 #import "SMMapViewController.h"
 
+@interface SMMapMarker : NSObject
+{
+@public
+	NSString *mKey;
+	NSString *mLabel;
+	double mLatitude;
+	double mLongitude;
+	NSImageView *mView;
+}
+@end
+
+@implementation SMMapMarker
+@end
+
+
+
+
+
 @interface SMMapViewController ()
 {
 	NSUInteger mGridWidth;
 	NSUInteger mGridHeight;
 	NSUInteger mImageWidth;
 	NSUInteger mImageHeight;
+	
+	NSImage *mMarkerImg;
+	NSMutableDictionary *mMarkers;
 	
 	NSMutableArray *mImageViews;
 }
@@ -29,8 +50,9 @@
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+	
     if (self) {
-        // Initialization code here.
+			// ...
     }
     
     return self;
@@ -45,6 +67,10 @@
 	mGridWidth = 16, mGridHeight = 10;
 	mImageWidth = mImageHeight = 256;
 	mImageViews = [[NSMutableArray alloc] init];
+	mMarkers = [[NSMutableDictionary alloc] init];
+	
+	NSData *crosshairData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"world/crosshair" ofType:@".png"]];
+	mMarkerImg = [[NSImage alloc] initWithData:crosshairData];
 	
 	NSView *worldView = [[NSView alloc] initWithFrame:NSMakeRect(0., 0., (mGridWidth*mImageWidth), (mGridHeight*mImageHeight))];
 	NSString *world = [[NSBundle mainBundle] pathForResource:@"world" ofType:@""];
@@ -111,12 +137,30 @@
  *
  *
  */
-- (void)setMarkerAtLongitude:(double)longitude latitude:(double)latitude
+- (void)unsetMarkerForKey:(NSString *)key
+{
+	if (key.length == 0)
+		return;
+	
+	SMMapMarker *marker = [mMarkers objectForKey:key];
+	
+	[marker->mView removeFromSuperview];
+	[mMarkers removeObjectForKey:key];
+	
+	[self.view setNeedsDisplay:TRUE];
+}
+
+/**
+ *
+ *
+ */
+- (void)setMarkerAtLatitude:(double)latitude longitude:(double)longitude withLabel:(NSString *)label forKey:(NSString *)key
 {
 	NSSize windowSize = self.view.window.frame.size;
 	NSUInteger imageSize = MIN(windowSize.width / mGridWidth, windowSize.height / mGridHeight);
 	double mapWidth = (double)mGridWidth * (double)imageSize;
 //double mapHeight = 16. * (double)imageSize;
+	SMMapMarker *marker = [mMarkers objectForKey:key];
 	
 	NSUInteger longitudeX = (NSUInteger)((int)mapWidth * (180 + longitude) / 360) % (int)mapWidth;
 	
@@ -160,15 +204,22 @@
 	// project from the bottom of the window
 	newlat = windowSize.height - newlat;
 	
-	NSUInteger latitudeY = mapWidth - latitude;
+	if (!marker) {
+		[mMarkers setObject:(marker = [[SMMapMarker alloc] init]) forKey:key];
+		marker->mView = [[NSImageView alloc] initWithFrame:NSMakeRect(longitudeX, newlat, 10, 10)];
+		marker->mView.image = mMarkerImg;
+		marker->mKey = key;
+	}
 	
-	NSData *crosshairData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"world/crosshair" ofType:@".png"]];
-	NSImage *crosshair = [[NSImage alloc] initWithData:crosshairData];
+//NSUInteger latitudeY = mapWidth - latitude;
 //NSImageView *crosshairView = [[NSImageView alloc] initWithFrame:NSMakeRect(longitudeX, latitudeY, 10, 10)];
-	NSImageView *crosshairView = [[NSImageView alloc] initWithFrame:NSMakeRect(longitudeX, newlat, 10, 10)];
-	crosshairView.image = crosshair;
 	
-	[self.view addSubview:crosshairView];
+	marker->mView.frame = NSMakeRect(longitudeX, newlat, 10, 10);
+	marker->mLatitude = latitude;
+	marker->mLongitude = longitude;
+	marker->mLabel = label;
+	
+	[self.view addSubview:marker->mView];
 }
 
 
@@ -195,36 +246,3 @@
 }
 
 @end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

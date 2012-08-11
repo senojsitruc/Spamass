@@ -18,6 +18,7 @@
 @implementation SMSocket
 
 @synthesize socketId = mSocketId;
+@synthesize ipaddress = mIpAddress;
 @synthesize email = mEmail;
 @synthesize emailCount = mEmailCount;
 

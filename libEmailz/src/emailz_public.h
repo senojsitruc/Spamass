@@ -105,6 +105,7 @@ void emailz_socket_set_smtp_handler (emailz_socket_t, emailz_smtp_handler_t, uin
 void emailz_socket_set_header_handler (emailz_socket_t, emailz_header_handler_t);
 void emailz_socket_set_data_handler (emailz_socket_t, emailz_data_handler_t);
 char* emailz_socket_get_name (emailz_socket_t);
+char* emailz_socket_get_addrstr (emailz_socket_t);
 
 /**
  *

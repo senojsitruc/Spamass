@@ -10,7 +10,9 @@
 
 @interface SMMapViewController : NSViewController
 
-- (void)setMarkerAtLongitude:(double)longitude latitude:(double)latitude;
+- (void)setMarkerAtLatitude:(double)latitude longitude:(double)longitude withLabel:(NSString *)label forKey:(NSString *)key;
+- (void)unsetMarkerForKey:(NSString *)key;
+
 - (void)sizeToFit;
 
 @end
