@@ -488,7 +488,10 @@ done:
 		[[NSNotificationCenter defaultCenter] addObserver:mMapController selector:@selector(sizeToFit) name:NSWindowDidEndLiveResizeNotification object:self.window];
 		
 		[mMapController sizeToFit];
-		[mMapController setMarkerAtLongitude:-84. latitude:33.];
+		[mMapController setMarkerAtLongitude:-83.178297 latitude:32.678125];
+		[mMapController setMarkerAtLongitude:25.912222 latitude:-24.658056];
+		[mMapController setMarkerAtLongitude:149.12444 latitude:-35.308056];
+		[mMapController setMarkerAtLongitude:24.9375 latitude:60.170833];
 	}
 	
 }

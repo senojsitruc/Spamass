@@ -114,63 +114,61 @@
 - (void)setMarkerAtLongitude:(double)longitude latitude:(double)latitude
 {
 	NSSize windowSize = self.view.window.frame.size;
-	NSUInteger mapWidth = MIN(windowSize.width, windowSize.height);
-	NSUInteger mapHeight = MIN(windowSize.width, windowSize.height);
-	NSUInteger longitudeX = (NSUInteger)(mapWidth * (180 + longitude) / 360.) % mapWidth + 0;
+	NSUInteger imageSize = MIN(windowSize.width / mGridWidth, windowSize.height / mGridHeight);
+	double mapWidth = (double)mGridWidth * (double)imageSize;
+//double mapHeight = 16. * (double)imageSize;
 	
-	latitude = latitude * M_PI / 180.; // degrees to radians
-	latitude = log(tan(latitude/2.) + (M_PI/4.));
-	latitude = (mapHeight / 2.) - (mapWidth * latitude / (2. * M_PI));
+	NSUInteger longitudeX = (NSUInteger)((int)mapWidth * (180 + longitude) / 360) % (int)mapWidth;
 	
+	/*
+	// convert from degrees to radians
+	double radians = latitude * M_PI / 180.;
+	NSLog(@"%s.. radians = %f", __PRETTY_FUNCTION__, radians);
 	
+	// mercator projection with equator of two pi units
+	double newlat = log(tan(radians/2.) + (M_PI/4.));
+	NSLog(@"%s.. newlat [1] = %f", __PRETTY_FUNCTION__, newlat);
+	
+	// adjust to our map size
+	newlat = (mapHeight / 2.) - (mapWidth * newlat / (2. * M_PI));
+	NSLog(@"%s.. newlat [2] = %f", __PRETTY_FUNCTION__, newlat);
+	
+	// removed two rows of images from the top of the map
+	newlat -= (double)(imageSize * 2);
+	NSLog(@"%s.. newlat [3] = %f", __PRETTY_FUNCTION__, newlat);
+	
+	// project from the bottom of the window
+	newlat = windowSize.height - newlat;
+	NSLog(@"%s.. newlat [4] = %f", __PRETTY_FUNCTION__, newlat);
+	*/
+	
+	// convert from degrees to radians
+	double radians = latitude * M_PI / 180.;
+	
+	// mercator projection with equator of two pi units
+	double newlat = log(tan((radians / 2.) + (M_PI / 4.)));
+	
+	// adjust to our map size
+	newlat = (4096. / 2.) - (4096. * newlat / (2. * M_PI));
+	
+	// removed two rows of images from the top of the map
+	newlat -= (double)(256. * 2.);
+	
+	// adjust to scale
+	newlat *= (double)imageSize / 256.;
+	
+	// project from the bottom of the window
+	newlat = windowSize.height - newlat;
 	
 	NSUInteger latitudeY = mapWidth - latitude;
 	
-	NSLog(@"%s.. longitudeX=%lu, latitudeY=%lu", __PRETTY_FUNCTION__, longitudeX, latitudeY);
-	
 	NSData *crosshairData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"world/crosshair" ofType:@".png"]];
 	NSImage *crosshair = [[NSImage alloc] initWithData:crosshairData];
-	NSImageView *crosshairView = [[NSImageView alloc] initWithFrame:NSMakeRect(longitudeX, latitudeY, 10, 10)];
+//NSImageView *crosshairView = [[NSImageView alloc] initWithFrame:NSMakeRect(longitudeX, latitudeY, 10, 10)];
+	NSImageView *crosshairView = [[NSImageView alloc] initWithFrame:NSMakeRect(longitudeX, newlat, 10, 10)];
 	crosshairView.image = crosshair;
 	
 	[self.view addSubview:crosshairView];
-	
-	
-	/*
-	$worldMapWidth = (($mapWidth / $mapLonDelta) * 360) / (2 * M_PI);
-	$mapOffsetY = ($worldMapWidth / 2 * log((1 + sin($mapLatBottomDegree)) / (1 - sin($mapLatBottomDegree))));
-	$y = $mapHeight - (($worldMapWidth / 2 * log((1 + sin($lat)) / (1 - sin($lat)))) - $mapOffsetY);
-	
-	return array($x, $y)
-	*/
-	
-	
-	
-	
-	/*
-	lat = lat * Math.PI / 180;  // convert from degrees to radians
-	y = Math.log(Math.tan((lat/2) + (Math.PI/4)));  // do the Mercator projection (w/ equator of 2pi units)
-	y = (map_height / 2) - (map_width * y / (2 * Math.PI)) + y_pos;   // fit it to our map
-	
-	x -= x_pos;
-	y -= y_pos;
-	
-	draw_point(x - half_dot, y - half_dot);
-	
-	
-	
-	var dot_size = 3;
-	var longitude_shift = 55;   // number of pixels your map's prime meridian is off-center.
-	var x_pos = 54;
-	var y_pos = 19;
-	var map_width = 430;
-	var map_height = 332;
-	var half_dot = Math.floor(dot_size / 2);
-	
-    // latitude: using the Mercator projection
-	}
-	*/
-	
 }
 
 
