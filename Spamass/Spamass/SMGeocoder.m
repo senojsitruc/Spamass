@@ -9,11 +9,33 @@
 #import "SMGeocoder.h"
 #import "APLevelDB.h"
 #import "SBJsonParser.h"
+#import <arpa/inet.h>
+#import <stdint.h>
+
+enum geocoder_iptype
+{
+	GEOCODER_IPTYPE_V4 = 4,
+	GEOCODER_IPTYPE_V6 = 6
+};
+
+struct geocoder_region
+{
+	uint32_t addrbeg;
+	uint32_t addrend;
+	enum geocoder_iptype iptype;
+	char code[3];
+};
 
 @interface SMGeocoder ()
 {
-	APLevelDB *mDb;
+	APLevelDB *mCacheDb;
 	dispatch_queue_t mQueue;
+	
+	NSUInteger mRegionCount;
+	APLevelDB *mRegionDb;
+	struct geocoder_region *mRegions;
+	
+	NSMutableDictionary *mCountryNamesByCode;
 }
 @end
 
@@ -23,16 +45,136 @@
  *
  *
  */
-- (id)initWithDb:(APLevelDB *)db
+- (id)initWithCacheDb:(APLevelDB *)cacheDb regionDb:(APLevelDB *)regionDb
 {
 	self = [super init];
 	
 	if (self) {
-		mDb = db;
+		mCacheDb = cacheDb;
+		mRegionDb = regionDb;
 		mQueue = dispatch_queue_create("net.spamass.geocoder", DISPATCH_QUEUE_CONCURRENT);
+		
+		{
+			mCountryNamesByCode = [[NSMutableDictionary alloc] init];
+			
+			NSString *path = [[NSBundle mainBundle] pathForResource:@"other/Country Codes" ofType:@"txt"];
+			NSString *names = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
+			NSArray *lines = [names componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+			
+			[lines enumerateObjectsUsingBlock:^ (id obj, NSUInteger ndx, BOOL *stop) {
+				NSArray *parts = [(NSString *)obj componentsSeparatedByString:@"\t"];
+				
+				if (parts.count == 2)
+					[mCountryNamesByCode setObject:[parts objectAtIndex:1] forKey:[parts objectAtIndex:0]];
+			}];
+			
+			NSLog(@"%s.. loaded %lu country codes", __PRETTY_FUNCTION__, mCountryNamesByCode.count);
+		}
+		
+		{
+			APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mRegionDb];
+			NSString *key = nil;
+			mRegionCount = 0;
+			
+			while (nil != (key = [iter nextKey]))
+				mRegionCount += 1;
+		}
+		
+		if (mRegionCount == 0)
+			[self reloadRegions];
+		
+		mRegions = (struct geocoder_region *)malloc(sizeof(struct geocoder_region) * mRegionCount);
+		memset(mRegions, 0, sizeof(struct geocoder_region) * mRegionCount);
+		
+		if (!mRegions)
+			NSLog(@"%s.. failed to malloc() regions!", __PRETTY_FUNCTION__);
+		else {
+			APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mRegionDb];
+			struct geocoder_region *region = mRegions;
+			NSString *key = nil;
+			NSUInteger regionCount = 0;
+			
+			@autoreleasepool {
+				while (nil != (key = [iter nextKey]) && regionCount++ < mRegionCount)
+					memcpy(region++, [mRegionDb dataForKey:key].bytes, sizeof(struct geocoder_region));
+			}
+		}
+		
+		NSLog(@"%s.. loaded %lu region allocations", __PRETTY_FUNCTION__, mRegionCount);
 	}
 	
 	return self;
+}
+
+/**
+ *
+ *
+ */
+- (void)reloadRegions
+{
+	NSLog(@"%s.. reloading regions", __PRETTY_FUNCTION__);
+	
+	void (^parseFile)(NSString*, NSMutableArray*) = ^ (NSString *filePath, NSMutableArray *list) {
+		@autoreleasepool {
+			NSString *fileData = [[NSString alloc] initWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
+			NSArray *lines = [fileData componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+			
+			for (NSString *line in lines) {
+				NSArray *parts = [line componentsSeparatedByString:@"|"];
+				
+				if ([parts count] != 7)
+					continue;
+				
+				if (FALSE == [[parts objectAtIndex:2] isEqualToString:@"ipv4"])
+					continue;
+				
+				[list addObject:line];
+			}
+		}
+	};
+	
+	NSBundle *mainBundle = [NSBundle mainBundle];
+	NSMutableArray *allocs = [[NSMutableArray alloc] init];
+	
+	parseFile([mainBundle pathForResource:@"other/delegated-afrinic-latest" ofType:@""], allocs);
+	parseFile([mainBundle pathForResource:@"other/delegated-apnic-latest" ofType:@""], allocs);
+	parseFile([mainBundle pathForResource:@"other/delegated-arin-latest" ofType:@""], allocs);
+	parseFile([mainBundle pathForResource:@"other/delegated-lacnic-latest" ofType:@""], allocs);
+	parseFile([mainBundle pathForResource:@"other/delegated-ripencc-latest" ofType:@""], allocs);
+	
+	[allocs enumerateObjectsUsingBlock:^ (id obj, NSUInteger ndx, BOOL *stop) {
+		NSArray *parts = [(NSString *)obj componentsSeparatedByString:@"|"];
+		struct geocoder_region region = { 0 };
+		
+		if (parts.count != 7)
+			return;
+		
+//	NSString *rir   = [parts objectAtIndex:0];    // rir name
+		NSString *code  = [parts objectAtIndex:1];    // country code
+		NSString *type  = [parts objectAtIndex:2];    // ipv4 | ipv6
+		NSString *addr  = [parts objectAtIndex:3];    // ip address
+		NSString *size  = [parts objectAtIndex:4];    // number of addresses in allocation
+//	NSString *date  = [parts objectAtIndex:5];    // allocation date
+//	NSString *state = [parts objectAtIndex:6];    // assigned | allocated
+		
+		if (![type isEqualToString:@"ipv4"])
+			return;
+		
+		if (code.length != 2)
+			return;
+		
+		const char *codestr = code.UTF8String;
+		
+		region.addrbeg = ntohl(inet_addr(addr.UTF8String));
+		region.addrend = region.addrbeg + (uint32_t)[size integerValue];
+		region.iptype = GEOCODER_IPTYPE_V4;
+		region.code[0] = codestr[0];
+		region.code[1] = codestr[1];
+		
+		[mRegionDb setData:[NSData dataWithBytes:&region length:sizeof(region)] forKey:addr];
+		
+		mRegionCount += 1;
+	}];
 }
 
 /**
@@ -55,6 +197,69 @@
 }
 
 /**
+ *
+ *
+ */
+- (NSString *)countryCodeForIPAddress:(NSString *)ipaddr
+{
+	NSInteger upper, lower, middle;
+	struct geocoder_region *tmpalloc;
+	uint32_t address = inet_addr(ipaddr.UTF8String);
+	
+	if (0x7F == (address >> 24) || 0x0A == (address >> 24))
+		return @"PN";
+	
+	if (mRegionCount == 0)
+		return nil;
+	
+	lower = 0;
+	upper = mRegionCount - 1;
+	
+	if (address < mRegions[0].addrbeg)
+		return 0;
+	else if (address > mRegions[mRegionCount-1].addrend)
+		return 0;
+	
+	while (1) {
+		if (lower == upper) {
+			tmpalloc = &mRegions[lower];
+			
+			if (tmpalloc->addrbeg <= address && tmpalloc->addrend >= address)
+				return [[NSString alloc] initWithBytes:tmpalloc->code length:2 encoding:NSUTF8StringEncoding];
+			else
+				return nil;
+		}
+		
+		middle = lower + ((upper - lower) / 2);
+		tmpalloc = &mRegions[middle];
+		
+		if (tmpalloc->addrbeg > address)
+			upper = middle - 1;
+		else if (tmpalloc->addrend < address) {
+			lower = middle + 1;
+		}
+		else
+			return [[NSString alloc] initWithBytes:tmpalloc->code length:2 encoding:NSUTF8StringEncoding];
+	}
+	
+	return nil;
+}
+
+/**
+ *
+ *
+ */
+- (NSString *)countryNameForIPAddress:(NSString *)ipaddr
+{
+	NSString *code = [self countryCodeForIPAddress:ipaddr];
+	
+	if (code.length == 0)
+		return nil;
+	else
+		return [mCountryNamesByCode objectForKey:code];
+}
+
+/**
  * First check our database. Then call hostip.info. Then call google. And don't forget to add a 
  * cache entry.
  */
@@ -67,12 +272,12 @@
 	{
 		NSString *lat=nil, *lon=nil;
 		
-		city = [mDb stringForKey:[ipaddr stringByAppendingString:@"__city"]];
-		state = [mDb stringForKey:[ipaddr stringByAppendingString:@"__state"]];
-		country = [mDb stringForKey:[ipaddr stringByAppendingString:@"__country"]];
-		code = [mDb stringForKey:[ipaddr stringByAppendingString:@"__code"]];
-		lat = [mDb stringForKey:[ipaddr stringByAppendingString:@"__latitude"]];
-		lon = [mDb stringForKey:[ipaddr stringByAppendingString:@"__longitude"]];
+		city = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__city"]];
+		state = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__state"]];
+		country = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__country"]];
+		code = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__code"]];
+		lat = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__latitude"]];
+		lon = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__longitude"]];
 		
 		//NSLog(@"%s.. got from cache!", __PRETTY_FUNCTION__);
 		
@@ -120,10 +325,12 @@
 				city = value;
 		}];
 		
+		/*
 		if (country.length == 0) {
 			NSLog(@"%s.. unable to geocode [%@]", __PRETTY_FUNCTION__, ipaddr);
 			return;
 		}
+		*/
 		
 		if ([city isEqualToString:@"(Unknown city)"])
 			city = nil;
@@ -147,6 +354,13 @@
 				country = [country substringToIndex:range.location];
 			}
 		}
+	}
+	
+	// if we weren't able to get _any_ information on the ip address, use the ip addresse's country
+	// allocation. it's not very specific, but it's better than "planet earth".
+	if (country.length == 0) {
+		code = [self countryCodeForIPAddress:ipaddr];
+		country = [self countryNameForIPAddress:ipaddr];
 	}
 	
 	// google maps - convert our city/state/country into a latitude and longitude
@@ -199,12 +413,12 @@
 	
 	// cache the results
 	{
-		[mDb setString:city forKey:[ipaddr stringByAppendingString:@"__city"]];
-		[mDb setString:state forKey:[ipaddr stringByAppendingString:@"__state"]];
-		[mDb setString:country forKey:[ipaddr stringByAppendingString:@"__country"]];
-		[mDb setString:code forKey:[ipaddr stringByAppendingString:@"__code"]];
-		[mDb setString:[[NSNumber numberWithDouble:latitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__latitude"]];
-		[mDb setString:[[NSNumber numberWithDouble:longitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__longitude"]];
+		[mCacheDb setString:city forKey:[ipaddr stringByAppendingString:@"__city"]];
+		[mCacheDb setString:state forKey:[ipaddr stringByAppendingString:@"__state"]];
+		[mCacheDb setString:country forKey:[ipaddr stringByAppendingString:@"__country"]];
+		[mCacheDb setString:code forKey:[ipaddr stringByAppendingString:@"__code"]];
+		[mCacheDb setString:[[NSNumber numberWithDouble:latitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__latitude"]];
+		[mCacheDb setString:[[NSNumber numberWithDouble:longitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__longitude"]];
 	}
 	
 	handler(latitude, longitude, city, state, country, code);

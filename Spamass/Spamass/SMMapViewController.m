@@ -144,10 +144,11 @@
 	
 	SMMapMarker *marker = [mMarkers objectForKey:key];
 	
-	[marker->mView removeFromSuperview];
-	[mMarkers removeObjectForKey:key];
-	
-	[self.view setNeedsDisplay:TRUE];
+	if (marker) {
+		[marker->mView removeFromSuperview];
+		[mMarkers removeObjectForKey:key];
+		[self.view setNeedsDisplay:TRUE];
+	}
 }
 
 /**

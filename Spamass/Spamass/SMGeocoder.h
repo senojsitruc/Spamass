@@ -17,7 +17,7 @@ typedef void (^SMGeocoderHandler)(double, double, NSString*, NSString*, NSString
 /**
  *
  */
-- (id)initWithDb:(APLevelDB *)db;
+- (id)initWithCacheDb:(APLevelDB *)cacheDb regionDb:(APLevelDB *)regionDb;
 
 /**
  *

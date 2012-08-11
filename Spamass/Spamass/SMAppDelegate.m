@@ -30,6 +30,7 @@ static NSArray *gWords;
 	 * Geocode
 	 */
 	APLevelDB *mGeocoderDb;
+	APLevelDB *mRegionDb;
 	SMGeocoder *mGeocoder;
 	
 	APLevelDB *mDb;
@@ -43,6 +44,7 @@ static NSArray *gWords;
 	NSCharacterSet *mEmailSplitSet;
 	
 	SMMapViewController *mMapController;
+	NSSound *mTinkSound;
 }
 @end
 
@@ -424,6 +426,11 @@ done:
 		return;
 	}
 	
+	if (nil == (mRegionDb = [APLevelDB levelDBWithPath:@"/Users/cjones/Desktop/Spamass-Region.db" error:nil])) {
+		NSLog(@"%s.. failed to open region database!", __PRETTY_FUNCTION__);
+		return;
+	}
+	
 	/*
 	{
 		APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mGeocoderDb];
@@ -434,7 +441,8 @@ done:
 	}
 	*/
 	
-	mGeocoder = [[SMGeocoder alloc] initWithDb:mGeocoderDb];
+	mTinkSound = [NSSound soundNamed:@"Tink"];
+	mGeocoder = [[SMGeocoder alloc] initWithCacheDb:mGeocoderDb regionDb:mRegionDb];
 	mHttpQueue = dispatch_queue_create("net.spamass.spamass-http", DISPATCH_QUEUE_CONCURRENT);
 	[NSThread detachNewThreadSelector:@selector(startHttp) toTarget:self withObject:nil];
 	mEmailSplitSet = [NSCharacterSet characterSetWithCharactersInString:@" <>,\r\n"];
@@ -478,6 +486,8 @@ done:
 			emailz_socket_set_smtp_handler(socket, mSmtpHandler, EMAILZ_SMTP_COMMAND_MAIL | EMAILZ_SMTP_COMMAND_RCPT);
 			emailz_socket_set_data_handler(socket, mDataHandler);
 			*context = (__bridge_retained void *)socketObj;
+			
+			[mTinkSound play];
 			
 			[mGeocoder geocode:socketObj.ipaddress handler:^ (double latitude, double longitude, NSString *city, NSString *state, NSString *country, NSString *code) {
 				[[NSThread mainThread] performBlock:^{
