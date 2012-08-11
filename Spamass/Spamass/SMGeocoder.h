@@ -23,5 +23,7 @@ typedef void (^SMGeocoderHandler)(double, double, NSString*, NSString*, NSString
  *
  */
 - (void)geocode:(NSString *)ipaddr handler:(SMGeocoderHandler)handler;
+- (NSString *)countryCodeForIPAddress:(NSString *)ipaddr;
+- (NSString *)countryNameForIPAddress:(NSString *)ipaddr;
 
 @end

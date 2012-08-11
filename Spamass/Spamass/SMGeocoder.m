@@ -98,9 +98,11 @@ struct geocoder_region
 				while (nil != (key = [iter nextKey]) && regionCount++ < mRegionCount)
 					memcpy(region++, [mRegionDb dataForKey:key].bytes, sizeof(struct geocoder_region));
 			}
+			
+			mRegionCount = regionCount;
+			
+			NSLog(@"%s.. loaded %lu region allocations", __PRETTY_FUNCTION__, regionCount);
 		}
-		
-		NSLog(@"%s.. loaded %lu region allocations", __PRETTY_FUNCTION__, mRegionCount);
 	}
 	
 	return self;
@@ -113,6 +115,8 @@ struct geocoder_region
 - (void)reloadRegions
 {
 	NSLog(@"%s.. reloading regions", __PRETTY_FUNCTION__);
+	
+	mRegionCount = 0;
 	
 	void (^parseFile)(NSString*, NSMutableArray*) = ^ (NSString *filePath, NSMutableArray *list) {
 		@autoreleasepool {
@@ -170,6 +174,15 @@ struct geocoder_region
 		region.iptype = GEOCODER_IPTYPE_V4;
 		region.code[0] = codestr[0];
 		region.code[1] = codestr[1];
+		
+		{
+			NSArray *addrparts = [addr componentsSeparatedByString:@"."];
+			addr = [NSString stringWithFormat:@"%03ld.%03ld.%03ld.%03ld",
+							[[addrparts objectAtIndex:0] integerValue],
+							[[addrparts objectAtIndex:1] integerValue],
+							[[addrparts objectAtIndex:2] integerValue],
+							[[addrparts objectAtIndex:3] integerValue]];
+		}
 		
 		[mRegionDb setData:[NSData dataWithBytes:&region length:sizeof(region)] forKey:addr];
 		
@@ -279,8 +292,6 @@ struct geocoder_region
 		lat = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__latitude"]];
 		lon = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__longitude"]];
 		
-		//NSLog(@"%s.. got from cache!", __PRETTY_FUNCTION__);
-		
 		if (lat && lon) {
 			handler([lat doubleValue], [lon doubleValue], city, state, country, code);
 			return;
@@ -325,13 +336,6 @@ struct geocoder_region
 				city = value;
 		}];
 		
-		/*
-		if (country.length == 0) {
-			NSLog(@"%s.. unable to geocode [%@]", __PRETTY_FUNCTION__, ipaddr);
-			return;
-		}
-		*/
-		
 		if ([city isEqualToString:@"(Unknown city)"])
 			city = nil;
 		
@@ -361,6 +365,8 @@ struct geocoder_region
 	if (country.length == 0) {
 		code = [self countryCodeForIPAddress:ipaddr];
 		country = [self countryNameForIPAddress:ipaddr];
+		
+		NSLog(@"%s.. code=%@, country=%@", __PRETTY_FUNCTION__, code, country);
 	}
 	
 	// google maps - convert our city/state/country into a latitude and longitude
@@ -382,6 +388,9 @@ struct geocoder_region
 			
 			if (country.length != 0)
 				[address appendString:country];
+			
+			if (address.length == 0)
+				return;
 			
 			NSLog(@"%s.. asking google for location [%@]", __PRETTY_FUNCTION__, address);
 		}
