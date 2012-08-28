@@ -69,7 +69,8 @@ typedef enum
 	EMAILZ_SMTP_COMMAND_NOOP     = (1 <<  8),
 	EMAILZ_SMTP_COMMAND_HELP     = (1 <<  9),
 	EMAILZ_SMTP_COMMAND_VRFY     = (1 << 10),
-	EMAILZ_SMTP_COMMAND_STARTTLS = (1 << 11)
+	EMAILZ_SMTP_COMMAND_AUTH     = (1 << 11),
+	EMAILZ_SMTP_COMMAND_STARTTLS = (1 << 12)
 } emailz_smtp_command_t;
 
 //
@@ -77,6 +78,7 @@ typedef enum
 //
 typedef void (^emailz_socket_handler_t)(struct emailz_s*, struct emailz_socket_s*, emailz_socket_state_t, void**);
 typedef void (^emailz_smtp_handler_t)(struct emailz_s*, void*, emailz_smtp_command_t, unsigned char *arg);
+typedef bool (^emailz_auth_handler_t)(struct emailz_s*, void*, char*, char*);
 typedef void (^emailz_header_handler_t)(struct emailz_s*, void*, unsigned char *name, unsigned char *arg);
 typedef void (^emailz_data_handler_t)(struct emailz_s*, void*, size_t datalen, const void *data, bool done);
 typedef void (^emailz_accept_handler_t)(struct emailz_listener_s*, int socket, struct sockaddr_in);
@@ -107,6 +109,7 @@ struct emailz_socket_s
 	void *context;                             // user context object
 	emailz_socket_handler_t socket_handler;    // socket state handler
 	emailz_smtp_handler_t smtp_handler;        // smtp command handler
+	emailz_auth_handler_t auth_handler;        // smtp auth handler
 	emailz_header_handler_t header_handler;    // email header handler
 	emailz_data_handler_t data_handler;        // email data handler
 	uint64_t smtp_handler_mask;                // mask for smtp commands
@@ -153,6 +156,7 @@ struct emailz_socket_s
 	SSLContextRef sslcontext;                  //
 	struct emailz_peerid_s peerid;             // ip:port
 	bool is_handshaking;                       //
+	bool is_secure;                            // connection is secure
 	CFArrayRef identity;                       // ssl root certificate
 	
 	/**

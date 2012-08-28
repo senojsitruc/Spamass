@@ -48,7 +48,8 @@ typedef enum
 	EMAILZ_SMTP_COMMAND_NOOP     = (1 <<  8),
 	EMAILZ_SMTP_COMMAND_HELP     = (1 <<  9),
 	EMAILZ_SMTP_COMMAND_VRFY     = (1 << 10),
-	EMAILZ_SMTP_COMMAND_STARTTLS = (1 << 11)
+	EMAILZ_SMTP_COMMAND_AUTH     = (1 << 11),
+	EMAILZ_SMTP_COMMAND_STARTTLS = (1 << 12)
 } emailz_smtp_command_t;
 
 //
@@ -56,6 +57,7 @@ typedef enum
 //
 typedef void (^emailz_socket_handler_t)(struct emailz_s*, struct emailz_socket_s*, emailz_socket_state_t, void**);
 typedef void (^emailz_smtp_handler_t)(struct emailz_s*, void*, emailz_smtp_command_t, unsigned char *arg);
+typedef bool (^emailz_auth_handler_t)(struct emailz_s*, void*, char*, char*);
 typedef void (^emailz_header_handler_t)(struct emailz_s*, void*, unsigned char *name, unsigned char *arg);
 typedef void (^emailz_data_handler_t)(struct emailz_s*, void*, size_t datalen, const void *data, bool done);
 typedef void (^emailz_accept_handler_t)(struct emailz_listener_s*, int socket, struct sockaddr_in);
@@ -102,6 +104,7 @@ void emailz_record_enable (emailz_t, bool, char*);
  *
  */
 void emailz_socket_set_smtp_handler (emailz_socket_t, emailz_smtp_handler_t, uint64_t);
+void emailz_socket_set_auth_handler (emailz_socket_t, emailz_auth_handler_t);
 void emailz_socket_set_header_handler (emailz_socket_t, emailz_header_handler_t);
 void emailz_socket_set_data_handler (emailz_socket_t, emailz_data_handler_t);
 char* emailz_socket_get_name (emailz_socket_t);

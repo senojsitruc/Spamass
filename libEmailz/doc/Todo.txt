@@ -1,1 +1,55 @@
 Max per-connection size
+
+Store all previously known email addresses and randomly decline unknown addresses for the sake of appearing legitimate.
+
+libCore
+	Primarily for disk access; not directly accessible by end users
+	
+	libEmailz
+		receive callbacks about emails
+		parse email
+		store email on disk (mmap)
+		store email metadata in leveldb
+	
+	query
+		install filter / notification - emails, sockets, etc.
+		search email metadata database
+		retrieve email by id
+
+libEmailz
+	Started by another app
+	Accesses libCore to store emails
+	
+	Filter
+		Email - sndr / rcpt
+		Origin - ip address / hostname
+			getaddrinfo() - cache results with a hard-coded ttl
+		Content
+			Keywords - Subject, body
+			URLs
+		Action
+			iOS push notification
+			Email - instant
+			Email - daily report
+
+Email storage
+	mmap()
+	lseek()
+	Store bulk emails in large files
+	Pre-allocate file size
+	Dispatch barrier to append emails onto file
+	Database entry with file name and email offset
+
+Map
+	Bottom bar display
+	Number of current connections
+	Total number of connections
+	Log of last 'n' connections
+	Log of last 'n' emails
+	Track mouse position on map and show lat/lon
+
+Web
+	Paging
+	Search (but something other than email address)
+		Sender? - Sender-Sender.db
+
