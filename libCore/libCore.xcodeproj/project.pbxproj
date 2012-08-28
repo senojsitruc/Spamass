@@ -6,8 +6,14 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F994292515DF824E0065DFD5 /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = F994292415DF824E0065DFD5 /* core.c */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		F994291B15DF81B50065DFD5 /* liblibCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = liblibCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		F994291B15DF81B50065DFD5 /* libCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		F994292415DF824E0065DFD5 /* core.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = core.c; sourceTree = "<group>"; };
+		F994292615DF82620065DFD5 /* core.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -24,6 +30,8 @@
 		F994291015DF81B50065DFD5 = {
 			isa = PBXGroup;
 			children = (
+				F994292215DF82280065DFD5 /* Documentation */,
+				F994292315DF822E0065DFD5 /* Source */,
 				F994291C15DF81B50065DFD5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -31,9 +39,25 @@
 		F994291C15DF81B50065DFD5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F994291B15DF81B50065DFD5 /* liblibCore.a */,
+				F994291B15DF81B50065DFD5 /* libCore.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F994292215DF82280065DFD5 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+		F994292315DF822E0065DFD5 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				F994292415DF824E0065DFD5 /* core.c */,
+				F994292615DF82620065DFD5 /* core.h */,
+			);
+			name = Source;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -63,7 +87,7 @@
 			);
 			name = libCore;
 			productName = libCore;
-			productReference = F994291B15DF81B50065DFD5 /* liblibCore.a */;
+			productReference = F994291B15DF81B50065DFD5 /* libCore.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -97,6 +121,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F994292515DF824E0065DFD5 /* core.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,16 +182,26 @@
 		F994292015DF81B50065DFD5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EXECUTABLE_PREFIX = lib;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				EXECUTABLE_PREFIX = "";
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../libEmailz/src";
+				OTHER_LDFLAGS = "$(SRCROOT)/../lib/libEmailz.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
 		};
 		F994292115DF81B50065DFD5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				EXECUTABLE_PREFIX = lib;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				EXECUTABLE_PREFIX = "";
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../libEmailz/src";
+				OTHER_LDFLAGS = "$(SRCROOT)/../lib/libEmailz.a";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = x86_64;
 			};
 			name = Release;
 		};

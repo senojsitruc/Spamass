@@ -336,8 +336,11 @@ struct geocoder_region
 				city = value;
 		}];
 		
-		if ([city isEqualToString:@"(Unknown city)"])
+		if ([[city lowercaseString] hasPrefix:@"(unknown city"])
 			city = nil;
+		
+		if ([[country lowercaseString] hasPrefix:@"(unknown country"])
+			country = nil;
 		
 		// sepaarate the city from the state: "Atlanta, GA"
 		{

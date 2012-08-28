@@ -9,6 +9,10 @@
 #ifndef libCore_core_h
 #define libCore_core_h
 
+struct core_s
+{
+	
+};
+typedef struct core_s *core_t;
 
-
-#endif
+#endif /* libCore_core_h */

@@ -13,4 +13,7 @@
    <FileRef
       location = "group:libEmailz/libEmailz.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:libCore/libCore.xcodeproj">
+   </FileRef>
 </Workspace>

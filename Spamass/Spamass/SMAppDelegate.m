@@ -233,13 +233,25 @@ done:
 	[mDb setString:subject forKey:[prefix stringByAppendingString:@"subject"]];
 	[mDb setString:email.sender forKey:[prefix stringByAppendingString:@"sender"]];
 	[mDb setString:[[NSNumber numberWithInteger:email.dataSize] stringValue] forKey:[prefix stringByAppendingString:@"size"]];
-	
 	[mDb setString:@"1" forKey:[[email.recipients objectAtIndex:0] stringByAppendingString:@"__99999999999999999-999.999.999.999-99999__999999"]];
 	
 	emailPath = [[self class] pathForEmail:email mkdir:TRUE];
 	
 	if (emailPath)
 		[email.data writeToFile:emailPath atomically:TRUE];
+	
+	// apply filters
+	{
+		
+		// filter by sndr/rcpt
+		//
+		// sndr__<email>__
+		// sndr__<email>__<action-id>
+		//
+		// action__<action-id>__email = <email>
+		// action__<action-id>__push = <ios user id>
+		
+	}
 	
 	NSLog(@"%s.. email is done! [sender='%@', size=%lu, subject='%@', path='%@']", __PRETTY_FUNCTION__, email.sender, email.dataSize, subject, emailPath);
 	
