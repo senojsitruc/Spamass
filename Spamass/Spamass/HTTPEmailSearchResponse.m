@@ -32,7 +32,7 @@
 	response.dataBuffer = [[NSMutableData alloc] init];
 	response->mIsDone = FALSE;
 	
-	NSLog(@"%s.. request='%@'", __PRETTY_FUNCTION__, filePath);
+	DLog(@"request='%@'", filePath);
 	
 	NSString *emailAddress = [args objectForKey:@"e"];
 	
@@ -68,7 +68,7 @@
 	
 	[SMAppDelegate emailsForAddress:emailAddress withBlock:^ BOOL (SMEmail *email) {
 		if (!response.connection) {
-			NSLog(@"%s.. no more connection!", __PRETTY_FUNCTION__);
+			DLog(@"no more connection!");
 			return FALSE;
 		}
 		
@@ -89,7 +89,7 @@
 			NSString *color = nil;
 			
 			if ([parts count] != 3) {
-				NSLog(@"%s.. invalid socketid [%@]", __PRETTY_FUNCTION__, email.socketId);
+				DLog(@"invalid socketid [%@]", email.socketId);
 				return FALSE;
 			}
 			
@@ -100,9 +100,18 @@
 			else
 				color = @"White";
 			
-			NSString *date = [parts objectAtIndex:0];
-			NSString *addr = [parts objectAtIndex:1];
-			NSString *port = [parts objectAtIndex:2];
+			NSString *date = parts[0];
+			NSString *addr = parts[1];
+			NSString *port = parts[2];
+			
+			date = [NSString stringWithFormat:@"%@-%@-%@ %@:%@:%@",
+							[date substringWithRange:NSMakeRange(0,4)],
+							[date substringWithRange:NSMakeRange(4,2)],
+							[date substringWithRange:NSMakeRange(6,2)],
+							[date substringWithRange:NSMakeRange(8,2)],
+							[date substringWithRange:NSMakeRange(10,2)],
+							[date substringWithRange:NSMakeRange(12,2)]
+							];
 			
 			[output appendString:@"<tr bgcolor=\""];
 			[output appendString:color];
@@ -125,7 +134,7 @@
 			[output appendString:[[NSNumber numberWithInteger:email.dataSize] stringValue]];
 			[output appendString:@"</td>"];
 			[output appendString:@"<td><code>"];
-			[output appendString:[date substringToIndex:14]];
+			[output appendString:date]; // [date substringToIndex:14]];
 			[output appendString:@"</code></td>"];
 			[output appendString:@"<td><code>"];
 			[output appendString:addr];

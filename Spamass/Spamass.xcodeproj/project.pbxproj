@@ -704,9 +704,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LIBRARY = "libstdc++";
 				CLANG_WARN_OBJCPP_ARC_ABI = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer: Curtis Jones (6NZ4UL4VF7)";
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Spamass/Spamass-Prefix.pch";
@@ -720,8 +721,9 @@
 					"\"$(SRCROOT)/../../../../../DasRamDisk/Xcode/Spamass-eotgjytquxczcqaghkjkdlxfygfo/Build/Products/Debug\"",
 					"\"$(SRCROOT)/../lib\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "3C001B85-2DE6-4F2B-8E1B-7CD9436A9B0A";
+				PROVISIONING_PROFILE = "";
 				VALID_ARCHS = x86_64;
 				WRAPPER_EXTENSION = app;
 			};
@@ -731,9 +733,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LIBRARY = "libstdc++";
 				CLANG_WARN_OBJCPP_ARC_ABI = YES;
-				CODE_SIGN_IDENTITY = "Mac Developer: Curtis Jones (6NZ4UL4VF7)";
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Spamass/Spamass-Prefix.pch";
@@ -747,8 +750,9 @@
 					"\"$(SRCROOT)/../../../../../DasRamDisk/Xcode/Spamass-eotgjytquxczcqaghkjkdlxfygfo/Build/Products/Debug\"",
 					"\"$(SRCROOT)/../lib\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "3C001B85-2DE6-4F2B-8E1B-7CD9436A9B0A";
+				PROVISIONING_PROFILE = "";
 				VALID_ARCHS = x86_64;
 				WRAPPER_EXTENSION = app;
 			};

@@ -28,7 +28,7 @@
 	response.dataBuffer = [[NSMutableData alloc] init];
 	response->mIsDone = FALSE;
 	
-	NSLog(@"%s.. request='%@'", __PRETTY_FUNCTION__, filePath);
+	DLog(@"request='%@'", filePath);
 	
 	{
 		NSArray *parts = [[args objectForKey:@"e"] componentsSeparatedByString:@"__"];
@@ -52,7 +52,7 @@
 	NSData *emailData = [NSData dataWithContentsOfFile:emailPath];
 	
 	if (!emailData || emailData.length == 0) {
-		NSLog(@"%s.. socketId=%@, serial=%@, emailPath='%@'", __PRETTY_FUNCTION__, socketId, serial, emailPath);
+		DLog(@"socketId=%@, serial=%@, emailPath='%@'", socketId, serial, emailPath);
 		NSMutableString *output = [[NSMutableString alloc] init];
 		[output appendString:@"<html><head><title>Hello.</title></head><body>"];
 		[output appendString:@"Not a valid request. [102]"];

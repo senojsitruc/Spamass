@@ -168,23 +168,23 @@
 	/*
 	// convert from degrees to radians
 	double radians = latitude * M_PI / 180.;
-	NSLog(@"%s.. radians = %f", __PRETTY_FUNCTION__, radians);
+	DLog(@"radians = %f", radians);
 	
 	// mercator projection with equator of two pi units
 	double newlat = log(tan(radians/2.) + (M_PI/4.));
-	NSLog(@"%s.. newlat [1] = %f", __PRETTY_FUNCTION__, newlat);
+	DLog(@"newlat [1] = %f", newlat);
 	
 	// adjust to our map size
 	newlat = (mapHeight / 2.) - (mapWidth * newlat / (2. * M_PI));
-	NSLog(@"%s.. newlat [2] = %f", __PRETTY_FUNCTION__, newlat);
+	DLog(@"newlat [2] = %f", newlat);
 	
 	// removed two rows of images from the top of the map
 	newlat -= (double)(imageSize * 2);
-	NSLog(@"%s.. newlat [3] = %f", __PRETTY_FUNCTION__, newlat);
+	DLog(@"newlat [3] = %f", newlat);
 	
 	// project from the bottom of the window
 	newlat = windowSize.height - newlat;
-	NSLog(@"%s.. newlat [4] = %f", __PRETTY_FUNCTION__, newlat);
+	DLog(@"newlat [4] = %f", newlat);
 	*/
 	
 	// convert from degrees to radians

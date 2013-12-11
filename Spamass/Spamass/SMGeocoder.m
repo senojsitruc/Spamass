@@ -28,14 +28,14 @@ struct geocoder_region
 
 @interface SMGeocoder ()
 {
-	APLevelDB *mCacheDb;
-	dispatch_queue_t mQueue;
+	APLevelDB *_cacheDb;
+	dispatch_queue_t _queue;
 	
-	NSUInteger mRegionCount;
-	APLevelDB *mRegionDb;
-	struct geocoder_region *mRegions;
+	NSUInteger _regionCount;
+	APLevelDB *_regionDb;
+	struct geocoder_region *_regions;
 	
-	NSMutableDictionary *mCountryNamesByCode;
+	NSMutableDictionary *_countryNamesByCode;
 }
 @end
 
@@ -50,12 +50,12 @@ struct geocoder_region
 	self = [super init];
 	
 	if (self) {
-		mCacheDb = cacheDb;
-		mRegionDb = regionDb;
-		mQueue = dispatch_queue_create("net.spamass.geocoder", DISPATCH_QUEUE_CONCURRENT);
+		_cacheDb = cacheDb;
+		_regionDb = regionDb;
+		_queue = dispatch_queue_create("net.spamass.geocoder", DISPATCH_QUEUE_CONCURRENT);
 		
 		{
-			mCountryNamesByCode = [[NSMutableDictionary alloc] init];
+			_countryNamesByCode = [[NSMutableDictionary alloc] init];
 			
 			NSString *path = [[NSBundle mainBundle] pathForResource:@"other/Country Codes" ofType:@"txt"];
 			NSString *names = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
@@ -65,43 +65,44 @@ struct geocoder_region
 				NSArray *parts = [(NSString *)obj componentsSeparatedByString:@"\t"];
 				
 				if (parts.count == 2)
-					[mCountryNamesByCode setObject:[parts objectAtIndex:1] forKey:[parts objectAtIndex:0]];
+					[_countryNamesByCode setObject:[parts objectAtIndex:1] forKey:[parts objectAtIndex:0]];
 			}];
 			
-			NSLog(@"%s.. loaded %lu country codes", __PRETTY_FUNCTION__, mCountryNamesByCode.count);
+			DLog(@"loaded %lu country codes", _countryNamesByCode.count);
 		}
 		
 		{
-			APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mRegionDb];
+			APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:_regionDb];
 			NSString *key = nil;
-			mRegionCount = 0;
+			_regionCount = 0;
 			
 			while (nil != (key = [iter nextKey]))
-				mRegionCount += 1;
+				_regionCount += 1;
 		}
 		
-		if (mRegionCount == 0)
+		if (_regionCount == 0)
 			[self reloadRegions];
 		
-		mRegions = (struct geocoder_region *)malloc(sizeof(struct geocoder_region) * mRegionCount);
-		memset(mRegions, 0, sizeof(struct geocoder_region) * mRegionCount);
+		_regions = (struct geocoder_region *)malloc(sizeof(struct geocoder_region) * _regionCount);
+		memset(_regions, 0, sizeof(struct geocoder_region) * _regionCount);
 		
-		if (!mRegions)
-			NSLog(@"%s.. failed to malloc() regions!", __PRETTY_FUNCTION__);
+		if (!_regions) {
+			DLog(@"failed to malloc() regions!");
+		}
 		else {
-			APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:mRegionDb];
-			struct geocoder_region *region = mRegions;
+			APLevelDBIterator *iter = [APLevelDBIterator iteratorWithLevelDB:_regionDb];
+			struct geocoder_region *region = _regions;
 			NSString *key = nil;
 			NSUInteger regionCount = 0;
 			
 			@autoreleasepool {
-				while (nil != (key = [iter nextKey]) && regionCount++ < mRegionCount)
-					memcpy(region++, [mRegionDb dataForKey:key].bytes, sizeof(struct geocoder_region));
+				while (nil != (key = [iter nextKey]) && regionCount++ < _regionCount)
+					memcpy(region++, [_regionDb dataForKey:key].bytes, sizeof(struct geocoder_region));
 			}
 			
-			mRegionCount = regionCount;
+			_regionCount = regionCount;
 			
-			NSLog(@"%s.. loaded %lu region allocations", __PRETTY_FUNCTION__, regionCount);
+			DLog(@"loaded %lu region allocations", regionCount);
 		}
 	}
 	
@@ -114,14 +115,19 @@ struct geocoder_region
  */
 - (void)reloadRegions
 {
-	NSLog(@"%s.. reloading regions", __PRETTY_FUNCTION__);
+	DLog(@"reloading regions");
 	
-	mRegionCount = 0;
+	_regionCount = 0;
 	
 	void (^parseFile)(NSString*, NSMutableArray*) = ^ (NSString *filePath, NSMutableArray *list) {
 		@autoreleasepool {
 			NSString *fileData = [[NSString alloc] initWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
 			NSArray *lines = [fileData componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+			
+			if (0 == lines) {
+				DLog(@"failed to read input file, %@", filePath);
+				return;
+			}
 			
 			for (NSString *line in lines) {
 				NSArray *parts = [line componentsSeparatedByString:@"|"];
@@ -153,13 +159,13 @@ struct geocoder_region
 		if (parts.count != 7)
 			return;
 		
-//	NSString *rir   = [parts objectAtIndex:0];    // rir name
-		NSString *code  = [parts objectAtIndex:1];    // country code
-		NSString *type  = [parts objectAtIndex:2];    // ipv4 | ipv6
-		NSString *addr  = [parts objectAtIndex:3];    // ip address
-		NSString *size  = [parts objectAtIndex:4];    // number of addresses in allocation
-//	NSString *date  = [parts objectAtIndex:5];    // allocation date
-//	NSString *state = [parts objectAtIndex:6];    // assigned | allocated
+//	NSString *rir   = parts[0];    // rir name
+		NSString *code  = parts[1];    // country code
+		NSString *type  = parts[2];    // ipv4 | ipv6
+		NSString *addr  = parts[3];    // ip address
+		NSString *size  = parts[4];    // number of addresses in allocation
+//	NSString *date  = parts[5];    // allocation date
+//	NSString *state = parts[6];    // assigned | allocated
 		
 		if (![type isEqualToString:@"ipv4"])
 			return;
@@ -170,7 +176,7 @@ struct geocoder_region
 		const char *codestr = code.UTF8String;
 		
 		region.addrbeg = ntohl(inet_addr(addr.UTF8String));
-		region.addrend = region.addrbeg + (uint32_t)[size integerValue];
+		region.addrend = region.addrbeg + (uint32_t)size.integerValue;
 		region.iptype = GEOCODER_IPTYPE_V4;
 		region.code[0] = codestr[0];
 		region.code[1] = codestr[1];
@@ -178,15 +184,15 @@ struct geocoder_region
 		{
 			NSArray *addrparts = [addr componentsSeparatedByString:@"."];
 			addr = [NSString stringWithFormat:@"%03ld.%03ld.%03ld.%03ld",
-							[[addrparts objectAtIndex:0] integerValue],
-							[[addrparts objectAtIndex:1] integerValue],
-							[[addrparts objectAtIndex:2] integerValue],
-							[[addrparts objectAtIndex:3] integerValue]];
+							[addrparts[0] integerValue],
+							[addrparts[1] integerValue],
+							[addrparts[2] integerValue],
+							[addrparts[3] integerValue]];
 		}
 		
-		[mRegionDb setData:[NSData dataWithBytes:&region length:sizeof(region)] forKey:addr];
+		[_regionDb setData:[NSData dataWithBytes:&region length:sizeof(region)] forKey:addr];
 		
-		mRegionCount += 1;
+		_regionCount += 1;
 	}];
 }
 
@@ -202,9 +208,7 @@ struct geocoder_region
 	if ([ipaddr hasPrefix:@"10."] || [ipaddr hasPrefix:@"192.168."])
 		return;
 	
-	handler = [handler copy];
-	
-	dispatch_async(mQueue, ^{
+	dispatch_async(_queue, ^{
 		[self __geocode:ipaddr handler:handler];
 	});
 }
@@ -217,25 +221,25 @@ struct geocoder_region
 {
 	NSInteger upper, lower, middle;
 	struct geocoder_region *tmpalloc;
-	uint32_t address = inet_addr(ipaddr.UTF8String);
+	uint32_t address = ntohl(inet_addr(ipaddr.UTF8String));
 	
 	if (0x7F == (address >> 24) || 0x0A == (address >> 24))
 		return @"PN";
 	
-	if (mRegionCount == 0)
+	if (_regionCount == 0)
 		return nil;
 	
 	lower = 0;
-	upper = mRegionCount - 1;
+	upper = _regionCount - 1;
 	
-	if (address < mRegions[0].addrbeg)
+	if (address < _regions[0].addrbeg)
 		return 0;
-	else if (address > mRegions[mRegionCount-1].addrend)
+	else if (address > _regions[_regionCount-1].addrend)
 		return 0;
 	
 	while (1) {
 		if (lower == upper) {
-			tmpalloc = &mRegions[lower];
+			tmpalloc = &_regions[lower];
 			
 			if (tmpalloc->addrbeg <= address && tmpalloc->addrend >= address)
 				return [[NSString alloc] initWithBytes:tmpalloc->code length:2 encoding:NSUTF8StringEncoding];
@@ -244,7 +248,7 @@ struct geocoder_region
 		}
 		
 		middle = lower + ((upper - lower) / 2);
-		tmpalloc = &mRegions[middle];
+		tmpalloc = &_regions[middle];
 		
 		if (tmpalloc->addrbeg > address)
 			upper = middle - 1;
@@ -269,7 +273,7 @@ struct geocoder_region
 	if (code.length == 0)
 		return nil;
 	else
-		return [mCountryNamesByCode objectForKey:code];
+		return [_countryNamesByCode objectForKey:code];
 }
 
 /**
@@ -285,12 +289,12 @@ struct geocoder_region
 	{
 		NSString *lat=nil, *lon=nil;
 		
-		city = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__city"]];
-		state = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__state"]];
-		country = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__country"]];
-		code = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__code"]];
-		lat = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__latitude"]];
-		lon = [mCacheDb stringForKey:[ipaddr stringByAppendingString:@"__longitude"]];
+		city = [_cacheDb stringForKey:[ipaddr stringByAppendingString:@"__city"]];
+		state = [_cacheDb stringForKey:[ipaddr stringByAppendingString:@"__state"]];
+		country = [_cacheDb stringForKey:[ipaddr stringByAppendingString:@"__country"]];
+		code = [_cacheDb stringForKey:[ipaddr stringByAppendingString:@"__code"]];
+		lat = [_cacheDb stringForKey:[ipaddr stringByAppendingString:@"__latitude"]];
+		lon = [_cacheDb stringForKey:[ipaddr stringByAppendingString:@"__longitude"]];
 		
 		if (lat && lon) {
 			handler([lat doubleValue], [lon doubleValue], city, state, country, code);
@@ -307,7 +311,7 @@ struct geocoder_region
 		NSData *data = [NSURLConnection sendSynchronousRequest:requ returningResponse:nil error:&error];
 		
 		if (!data) {
-			NSLog(@"%s.. no data for url [%@]", __PRETTY_FUNCTION__, url);
+			DLog(@"no data for url [%@]", url);
 			return;
 		}
 		
@@ -323,12 +327,12 @@ struct geocoder_region
 			NSArray *parts = [line componentsSeparatedByString:@": "];
 			
 			if (parts.count != 2) {
-				NSLog(@"%s.. invalid line [%@]", __PRETTY_FUNCTION__, line);
+				DLog(@"invalid line [%@]", line);
 				return;
 			}
 			
-			NSString *label = [parts objectAtIndex:0];
-			NSString *value = [parts objectAtIndex:1];
+			NSString *label = parts[0];
+			NSString *value = parts[1];
 			
 			if ([label isEqualToString:@"Country"])
 				country = value;
@@ -336,10 +340,10 @@ struct geocoder_region
 				city = value;
 		}];
 		
-		if ([[city lowercaseString] hasPrefix:@"(unknown city"])
+		if ([city.lowercaseString hasPrefix:@"(unknown city"])
 			city = nil;
 		
-		if ([[country lowercaseString] hasPrefix:@"(unknown country"])
+		if ([country.lowercaseString hasPrefix:@"(unknown country"])
 			country = nil;
 		
 		// sepaarate the city from the state: "Atlanta, GA"
@@ -369,7 +373,7 @@ struct geocoder_region
 		code = [self countryCodeForIPAddress:ipaddr];
 		country = [self countryNameForIPAddress:ipaddr];
 		
-		NSLog(@"%s.. code=%@, country=%@", __PRETTY_FUNCTION__, code, country);
+		DLog(@"code=%@, country=%@", code, country);
 	}
 	
 	// google maps - convert our city/state/country into a latitude and longitude
@@ -395,7 +399,7 @@ struct geocoder_region
 			if (address.length == 0)
 				return;
 			
-			//NSLog(@"%s.. asking google for location [%@]", __PRETTY_FUNCTION__, address);
+			//DLog(@"asking google for location [%@]", address);
 		}
 		
 		NSURL *url = [NSURL URLWithString:[@"https://maps.googleapis.com/maps/api/geocode/json?sensor=true&address=" stringByAppendingString:[address stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
@@ -403,7 +407,7 @@ struct geocoder_region
 		NSData *data = [NSURLConnection sendSynchronousRequest:requ returningResponse:nil error:&error];
 		
 		if (!data) {
-			NSLog(@"%s.. no data for url [%@]", __PRETTY_FUNCTION__, url);
+			DLog(@"no data for url [%@]", url);
 			return;
 		}
 		
@@ -411,7 +415,7 @@ struct geocoder_region
 		NSArray *results = [info objectForKey:@"results"];
 		
 		if (results.count == 0) {
-			NSLog(@"%s.. nothing good from google for address [%@]", __PRETTY_FUNCTION__, address);
+			DLog(@"nothing good from google for address [%@]", address);
 			return;
 		}
 		
@@ -425,14 +429,14 @@ struct geocoder_region
 	
 	// cache the results
 	{
-		[mCacheDb setString:city forKey:[ipaddr stringByAppendingString:@"__city"]];
-		[mCacheDb setString:state forKey:[ipaddr stringByAppendingString:@"__state"]];
-		[mCacheDb setString:country forKey:[ipaddr stringByAppendingString:@"__country"]];
-		[mCacheDb setString:code forKey:[ipaddr stringByAppendingString:@"__code"]];
-		[mCacheDb setString:[[NSNumber numberWithDouble:latitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__latitude"]];
-		[mCacheDb setString:[[NSNumber numberWithDouble:longitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__longitude"]];
+		[_cacheDb setString:city forKey:[ipaddr stringByAppendingString:@"__city"]];
+		[_cacheDb setString:state forKey:[ipaddr stringByAppendingString:@"__state"]];
+		[_cacheDb setString:country forKey:[ipaddr stringByAppendingString:@"__country"]];
+		[_cacheDb setString:code forKey:[ipaddr stringByAppendingString:@"__code"]];
+		[_cacheDb setString:[[NSNumber numberWithDouble:latitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__latitude"]];
+		[_cacheDb setString:[[NSNumber numberWithDouble:longitude] stringValue] forKey:[ipaddr stringByAppendingString:@"__longitude"]];
 		
-		//NSLog(@"%s.. cached %f, %f for %@", __PRETTY_FUNCTION__, latitude, longitude, ipaddr);
+		//DLog(@"cached %f, %f for %@", latitude, longitude, ipaddr);
 	}
 	
 	handler(latitude, longitude, city, state, country, code);

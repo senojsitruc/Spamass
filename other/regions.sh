@@ -13,4 +13,4 @@ wget ftp://ftp.ripe.net/ripe/stats/delegated-ripencc-latest
 wget ftp://ftp.lacnic.net/pub/stats/lacnic/delegated-lacnic-latest
 
 # ARIN - North America
-wget ftp://ftp.arin.net/pub/stats/arin/delegated-arin-latest
+wget ftp://ftp.arin.net/pub/stats/arin/delegated-arin-extended-latest

@@ -57,7 +57,7 @@
 			[output appendString:@"\">"];
 			[output appendString:email];
 			[output appendString:@"</a></td>\n"];
-			NSLog(@"%s.. %@ for %@:%hu", __PRETTY_FUNCTION__, email, addr, port);
+			DLog(@"%@ for %@:%hu", email, addr, port);
 			
 			[[SMAppDelegate sharedInstance] recordEmailAddress:email withOrigin:addr];
 		}

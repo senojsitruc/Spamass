@@ -2398,7 +2398,7 @@ static NSMutableArray *recentNonces;
 	if (tag == HTTP_PARTIAL_RESPONSE_BODY)
 	{
 		if (isZero) {
-			NSLog(@"%s.. is zero!", __PRETTY_FUNCTION__);
+			DLog(@"is zero!");
 		}
 		
 		// Update the amount of data we have in asyncSocket's write queue
@@ -2410,7 +2410,7 @@ static NSMutableArray *recentNonces;
 	else if (tag == HTTP_CHUNKED_RESPONSE_BODY)
 	{
 		if (isZero) {
-			NSLog(@"%s.. is zero!", __PRETTY_FUNCTION__);
+			DLog(@"is zero!");
 		}
 		
 		// Update the amount of data we have in asyncSocket's write queue.
@@ -2428,7 +2428,7 @@ static NSMutableArray *recentNonces;
 	else if (tag == HTTP_PARTIAL_RANGE_RESPONSE_BODY)
 	{
 		if (isZero) {
-			NSLog(@"%s.. is zero!", __PRETTY_FUNCTION__);
+			DLog(@"is zero!");
 		}
 		
 		// Update the amount of data we have in asyncSocket's write queue
@@ -2440,7 +2440,7 @@ static NSMutableArray *recentNonces;
 	else if (tag == HTTP_PARTIAL_RANGES_RESPONSE_BODY)
 	{
 		if (isZero) {
-			NSLog(@"%s.. is zero!", __PRETTY_FUNCTION__);
+			DLog(@"is zero!");
 		}
 		
 		// Update the amount of data we have in asyncSocket's write queue

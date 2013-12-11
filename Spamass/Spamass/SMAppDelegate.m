@@ -18,7 +18,7 @@
 #import <sys/stat.h>
 #import "NSThread+Additions.h"
 
-static SMAppDelegate *gAppDelegate;
+static __unsafe_unretained SMAppDelegate *gAppDelegate;
 static NSArray *gMaleNames;
 static NSArray *gFemaleNames;
 static NSArray *gLastNames;
@@ -167,7 +167,8 @@ static NSArray *gWords;
 - (void)handleData:(NSData *)data withSocket:(SMSocket *)socket
 {
 	SMEmail *email = socket.email;
-	NSString *arg = [[NSString alloc] initWithCString:data.bytes encoding:NSUTF8StringEncoding];
+	NSString *arg = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+//NSString *arg = [[NSString alloc] initWithCString:data.bytes encoding:NSUTF8StringEncoding];
 	NSMutableDictionary *headers = email.headers;
 	
 	[email.data appendData:data];
@@ -195,22 +196,23 @@ static NSArray *gWords;
 			
 			value = [value stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 			
-			NSObject *header = [headers objectForKey:name];
+			NSObject *header = headers[name];
 			
 			if (!header) {
 				header = value;
 				[headers setObject:header forKey:name];
 			}
-			else if ([header isKindOfClass:[NSString class]]) {
+			else if ([header isKindOfClass:NSString.class]) {
 				header = [NSMutableArray arrayWithObjects:header, value, nil];
-				[headers setObject:header forKey:name];
+				headers[name] = header;
 			}
-			else if ([header isKindOfClass:[NSMutableArray class]])
+			else if ([header isKindOfClass:NSMutableArray.class]) {
 				[(NSMutableArray *)header addObject:value];
+			}
 		}
 	}
 	else {
-		//NSLog(@"%s.. email body: %@", __PRETTY_FUNCTION__, arg);
+		//DLog(@"email body: %@", arg);
 	}
 	
 done:
@@ -230,12 +232,15 @@ done:
 	NSString *subject = [headers objectForKey:@"subject"];
 	NSString *emailPath = nil;
 	
+	if ([subject isKindOfClass:NSArray.class])
+		subject = [(NSArray *)subject componentsJoinedByString:@""];
+	
 	[mDb setString:subject forKey:[prefix stringByAppendingString:@"subject"]];
 	[mDb setString:email.sender forKey:[prefix stringByAppendingString:@"sender"]];
 	[mDb setString:[[NSNumber numberWithInteger:email.dataSize] stringValue] forKey:[prefix stringByAppendingString:@"size"]];
 	[mDb setString:@"1" forKey:[[email.recipients objectAtIndex:0] stringByAppendingString:@"__99999999999999999-999.999.999.999-99999__999999"]];
 	
-	emailPath = [[self class] pathForEmail:email mkdir:TRUE];
+	emailPath = [self.class pathForEmail:email mkdir:TRUE];
 	
 	if (emailPath)
 		[email.data writeToFile:emailPath atomically:TRUE];
@@ -253,7 +258,7 @@ done:
 		
 	}
 	
-	NSLog(@"%s.. email is done! [sender='%@', size=%lu, subject='%@', path='%@']", __PRETTY_FUNCTION__, email.sender, email.dataSize, subject, emailPath);
+	DLog(@"email is done! [sender='%@', size=%lu, subject='%@', path='%@']", email.sender, email.dataSize, subject, emailPath);
 	
 	socket.email = nil;
 }
@@ -440,22 +445,22 @@ done:
 	gAppDelegate = self;
 	
 	if (nil == (mDb = [APLevelDB levelDBWithPath:@"/Users/cjones/Desktop/Spamass-Email.db" error:nil])) {
-		NSLog(@"%s.. failed to open email database!", __PRETTY_FUNCTION__);
+		DLog(@"failed to open email database!");
 		return;
 	}
 	
 	if (nil == (mGeocoderDb = [APLevelDB levelDBWithPath:@"/Users/cjones/Desktop/Spamass-Geocoder.db" error:nil])) {
-		NSLog(@"%s.. failed to open geocoder database!", __PRETTY_FUNCTION__);
+		DLog(@"failed to open geocoder database!");
 		return;
 	}
 	
 	if (nil == (mRegionDb = [APLevelDB levelDBWithPath:@"/Users/cjones/Desktop/Spamass-Region.db" error:nil])) {
-		NSLog(@"%s.. failed to open region database!", __PRETTY_FUNCTION__);
+		DLog(@"failed to open region database!");
 		return;
 	}
 	
 	if (nil == (mOriginDb = [APLevelDB levelDBWithPath:@"/Users/cjones/Desktop/Spamass-Origin.db" error:nil])) {
-		NSLog(@"%s.. failed to open origin database!", __PRETTY_FUNCTION__);
+		DLog(@"failed to open origin database!");
 		return;
 	}
 	
@@ -465,7 +470,7 @@ done:
 		NSString *key = nil;
 		
 		while (nil != (key = [iter nextKey]))
-			NSLog(@"%s.. key='%@', value='%@'", __PRETTY_FUNCTION__, key, [mGeocoderDb stringForKey:key]);
+			DLog(@"key='%@', value='%@'", key, [mGeocoderDb stringForKey:key]);
 	}
 #endif
 	
@@ -480,28 +485,28 @@ done:
 	//
 	// smtp handler
 	//
-	mSmtpHandler = [^ (emailz_t emailz, void *_context, emailz_smtp_command_t command, unsigned char *_arg) {
+	mSmtpHandler = ^ (emailz_t emailz, void *_context, emailz_smtp_command_t command, unsigned char *_arg) {
 		SMSocket *socket = (__bridge SMSocket *)_context;
 		NSString *arg = [NSString stringWithCString:(char *)_arg encoding:NSUTF8StringEncoding];
 		
 		if (EMAILZ_SMTP_COMMAND_MAIL == command)
-			[self handleFrom:arg withSocket:socket];
+			[gAppDelegate handleFrom:arg withSocket:socket];
 		
 		else if (EMAILZ_SMTP_COMMAND_RCPT == command)
-			[self handleRcpt:arg withSocket:socket];
-	} copy];
+			[gAppDelegate handleRcpt:arg withSocket:socket];
+	};
 	
 	//
 	// data handler
 	//
-	mDataHandler = [^ (emailz_t emailz, void *context, size_t datalen, const void *data, bool done) {
+	mDataHandler = ^ (emailz_t emailz, void *context, size_t datalen, const void *data, bool done) {
 		SMSocket *socket = (__bridge SMSocket *)context;
 		
 		if (!done)
-			[self handleData:[NSData dataWithBytes:data length:datalen] withSocket:socket];
+			[gAppDelegate handleData:[NSData dataWithBytes:data length:datalen] withSocket:socket];
 		else
-			[self handleEmailWithSocket:socket];
-	} copy];
+			[gAppDelegate handleEmailWithSocket:socket];
+	};
 	
 	//
 	// socket handler
@@ -527,11 +532,10 @@ done:
 			}];
 		}
 		else if (EMAILZ_SOCKET_STATE_CLOSE == state) {
-			SMSocket *socket = (__bridge_transfer SMSocket *)*context;
-			
-			[[NSThread mainThread] performBlock:^{
+			SMSocket *socket = (__bridge SMSocket *)*context;
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 				[mMapController unsetMarkerForKey:socket.socketId];
-			}];
+			});
 		}
 	});
 	
@@ -575,7 +579,7 @@ done:
 				NSArray *parts = [key componentsSeparatedByString:@"__"];
 				
 				if ([parts count] != 4) {
-					NSLog(@"%s.. invalid key! [%@]", __PRETTY_FUNCTION__, key);
+					DLog(@"invalid key! [%@]", key);
 					break;
 				}
 				

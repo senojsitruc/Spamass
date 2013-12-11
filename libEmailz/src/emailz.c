@@ -15,6 +15,7 @@
 #include "logger.h"
 
 #define XLOG(...) {LOGX(__VA_ARGS__);}
+//#define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
 
 static void emailz_handle_accept (emailz_t, emailz_listener_t, int, struct sockaddr_in);
 
@@ -103,7 +104,7 @@ emailz_start (emailz_t emailz)
 				void *content = mmap(NULL, keylen, PROT_READ, MAP_PRIVATE, keyfd, 0);
 				
 				if (NULL == (keydata = CFDataCreate(NULL, content, keylen))) {
-					printf("%s.. failed to CFDataCreate()\n", __PRETTY_FUNCTION__);
+					LOGX("failed to CFDataCreate()\n");
 					return false;
 				}
 				
@@ -112,7 +113,7 @@ emailz_start (emailz_t emailz)
 			}
 			
 			if (noErr != (oserr = SecPKCS12Import(keydata, options, &items))) {
-				printf("%s.. failed to SecPKCS12Import(), %d\n", __PRETTY_FUNCTION__, oserr);
+				LOGX("failed to SecPKCS12Import(), %d\n", oserr);
 				return false;
 			}
 			
@@ -120,7 +121,7 @@ emailz_start (emailz_t emailz)
 			identity = (SecIdentityRef)CFDictionaryGetValue(import, CFSTR("identity"));
 			
 			if (NULL == (identities = CFArrayCreate(NULL, (const void **)&identity, 1, NULL))) {
-				printf("%s.. failed to CFArrayCreate()\n", __PRETTY_FUNCTION__);
+				LOGX("failed to CFArrayCreate()\n");
 				return false;
 			}
 			
@@ -205,7 +206,7 @@ emailz_record_enable (emailz_t emailz, bool enable, char *base)
 	emailz->socket_record = enable;
 	
 	if (strlen(base) >= sizeof(emailz->record_base)) {
-		printf("%s.. base dir is longer than we support\n", __PRETTY_FUNCTION__);
+		LOGX("base dir is longer than we support\n");
 		return;
 	}
 	
@@ -502,12 +503,12 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 			oserr = SSLRead(socket->sslcontext, buffer, 1000, &processed);
 			
 			if (oserr && oserr == errSSLClosedGraceful) {
-				printf("%s.. ssl connection closed gracefully\n", __PRETTY_FUNCTION__);
+				LOGX("ssl connection closed gracefully\n");
 				emailz_socket_stop(socket);
 				break;
 			}
 			else if (oserr && oserr != errSSLWouldBlock) {
-				printf("%s.. failed to SSLRead(), %s [%d]\n", __PRETTY_FUNCTION__, strerror(oserr), oserr);
+				LOGX("failed to SSLRead(), %s [%d]\n", strerror(oserr), oserr);
 				emailz_socket_stop(socket);
 				break;
 			}
@@ -792,9 +793,9 @@ emailz_socket_handle_write (emailz_socket_t socket, char *buffer, ssize_t buffer
 		OSStatus error = SSLWrite(socket->sslcontext, buffer, bufferlen, &processed);
 		
 		if (errSSLWouldBlock == error)
-			printf("%s.. ssl error! why is it blocking?\n", __PRETTY_FUNCTION__);
+			LOGX("ssl error! why is it blocking?\n");
 		else if (error)
-			printf("%s.. ssl error! %d\n", __PRETTY_FUNCTION__, error);
+			LOGX("ssl error! %d\n", error);
 	}
 	else {
 		if (!handler)
@@ -1200,19 +1201,19 @@ emailz_listener_start (emailz_listener_t listener)
 	
 	// create the socket
 	if (-1 == (sock = socket(AF_INET, SOCK_STREAM, 0))) {
-		printf("%s.. failed to socket(), %s\n", __PRETTY_FUNCTION__, strerror(errno));
+		LOGX("failed to socket(), %s\n", strerror(errno));
 		return false;
 	}
 	
 	// make the socket reuseable
 	if (0 != setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))) {
-		printf("%s.. failed to setsockopt(SO_REUSEADDR), %s\n", __PRETTY_FUNCTION__, strerror(errno));
+		LOGX("failed to setsockopt(SO_REUSEADDR), %s\n", strerror(errno));
 		goto fail;
 	}
 	
 	// do not queue up outgoing data on the socket
 	if (0 != setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay))) {
-		printf("%s.. failed to setsockopt(TCP_NODELAY=%d), %s\n", __PRETTY_FUNCTION__, nodelay, strerror(errno));
+		LOGX("failed to setsockopt(TCP_NODELAY=%d), %s\n", nodelay, strerror(errno));
 		goto fail;
 	}
 	
@@ -1223,13 +1224,13 @@ emailz_listener_start (emailz_listener_t listener)
 	
 	// bind to the local port
 	if (-1 == bind(sock, (struct sockaddr *)&soaddr, sizeof(soaddr))) {
-		printf("%s.. failed to bind(), %s\n", __PRETTY_FUNCTION__, strerror(errno));
+		LOGX("failed to bind(), %s\n", strerror(errno));
 		goto fail;
 	}
 	
 	// listen
 	if (-1 == listen(sock, 100)) {
-		printf("%s.. failed to listen(), %s\n", __PRETTY_FUNCTION__, strerror(errno));
+		LOGX("failed to listen(), %s\n", strerror(errno));
 		goto fail;
 	}
 	
@@ -1535,7 +1536,7 @@ NewBase64Decode (const char *inputBuffer, size_t length, char *outputBuffer, siz
 	if (length == -1)
 		length = strlen(inputBuffer);
 	
-	size_t i=0, j=0, outputBufferSize = ((length+BASE64_UNIT_SIZE-1) / BASE64_UNIT_SIZE) * BINARY_UNIT_SIZE;
+	size_t i=0, j=0 /*, outputBufferSize = ((length+BASE64_UNIT_SIZE-1) / BASE64_UNIT_SIZE) * BINARY_UNIT_SIZE*/ ;
 //unsigned char *outputBuffer = (unsigned char *)malloc(outputBufferSize);
 	
 	while (i < length) {

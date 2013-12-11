@@ -27,7 +27,7 @@
  */
 + (NSObject<HTTPResponse> *)responseWithPath:(NSString *)filePath forConnection:(HTTPConnection *)connection
 {
-	NSLog(@"%s.. filePath='%@'", __PRETTY_FUNCTION__, filePath);
+	DLog(@"filePath='%@'", filePath);
 	
 	@try {
 		if ([filePath hasPrefix:@"/s?"])
@@ -38,10 +38,10 @@
 			return [HTTPMainPageResponse responseWithPath:filePath forConnection:(HTTPConnection *)connection];
 	}
 	@catch (NSException *e) {
-		NSLog(@"%s.. name = %@", __PRETTY_FUNCTION__, [e name]);
-		NSLog(@"%s.. reason = %@", __PRETTY_FUNCTION__, [e reason]);
-		NSLog(@"%s.. userInfo = %@", __PRETTY_FUNCTION__, [e userInfo]);
-		NSLog(@"%s.. %@", __PRETTY_FUNCTION__, [e callStackSymbols]);
+		DLog(@"name = %@", [e name]);
+		DLog(@"reason = %@", [e reason]);
+		DLog(@"userInfo = %@", [e userInfo]);
+		DLog(@"%@", [e callStackSymbols]);
 	}
 }
 
