@@ -179,6 +179,19 @@ emailz_stop (emailz_t emailz)
  *
  */
 void
+emailz_set_handler_queue (emailz_t emailz, dispatch_queue_t queue)
+{
+	if (!emailz)
+		return;
+	
+	emailz->handler_queue = queue;
+}
+
+/**
+ *
+ *
+ */
+void
 emailz_set_socket_handler (emailz_t emailz, emailz_socket_handler_t handler)
 {
 	if (!emailz)
@@ -237,6 +250,7 @@ emailz_handle_accept (emailz_t emailz, emailz_listener_t listener, int socketfd,
 	socket->addr = addr;
 	socket->port = addr.sin_port;
 	socket->socket_handler = emailz->socket_handler;
+	socket->handler_queue = emailz->handler_queue;
 	socket->identity = emailz->identity;
 	socket->peerid.addr = addr.sin_addr.s_addr;
 	socket->peerid.port = addr.sin_port;
@@ -385,8 +399,15 @@ emailz_socket_start (emailz_socket_t socket, bool record)
 		}
 	}
 	
-	if (socket->socket_handler)
-		socket->socket_handler(socket->emailz, socket, EMAILZ_SOCKET_STATE_OPEN, &socket->context);
+	// callback - socket handler
+	{
+		emailz_socket_handler_t handler = socket->socket_handler;
+		dispatch_queue_t queue = socket->handler_queue;
+		
+		if (handler && queue) {
+			dispatch_async(queue, ^{ handler(socket->emailz, socket, EMAILZ_SOCKET_STATE_OPEN, &socket->context); });
+		}
+	}
 	
 	if (record) {
 		if (false == emailz_socket_record_open(socket)) {
@@ -399,8 +420,15 @@ emailz_socket_start (emailz_socket_t socket, bool record)
 	socket->channel = dispatch_io_create(DISPATCH_IO_STREAM, socket->socketfd, socket->queue, ^ (int error) {
 		//XLOG("[%s:%hu] socket closing [bytes_in=%llu, bytes_out=%llu, error=%d]", socket->addrstr, socket->port, socket->inbytes, socket->outbytes, error);
 		
-		if (socket->socket_handler)
-			socket->socket_handler(socket->emailz, socket, EMAILZ_SOCKET_STATE_CLOSE, &socket->context);
+		// callback - socket handler
+		{
+			emailz_socket_handler_t handler = socket->socket_handler;
+			dispatch_queue_t queue = socket->handler_queue;
+			
+			if (handler && queue) {
+				dispatch_async(queue, ^{ handler(socket->emailz, socket, EMAILZ_SOCKET_STATE_CLOSE, &socket->context); });
+			}
+		}
 		
 		socket->emailz->sockets_open -= 1;
 		
@@ -548,16 +576,43 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 		// data_handler and let them know what's going on. we don't actually retain any of this data.
 		if (EMAILZ_SMTP_COMMAND_DATA == socket->state) {
 			if (socket->linelen == 3 && socket->line[0] == '.' && socket->line[1] == '\r' && socket->line[2] == '\n')  {
-				if (socket->data_handler)
-					socket->data_handler(socket->emailz, socket->context, 0, NULL, true);
+				
+				// callback - data handler
+				{
+					emailz_data_handler_t handler = socket->data_handler;
+					dispatch_queue_t queue = socket->handler_queue;
+					
+					if (handler && queue) {
+						dispatch_async(queue, ^{ handler(socket->emailz, socket->context, 0, NULL, true); });
+					}
+				}
+				
+//				if (socket->data_handler)
+//					socket->data_handler(socket->emailz, socket->context, 0, NULL, true);
+				
 				socket->state = EMAILZ_SMTP_COMMAND_NONE;
 				emailz_socket_handle_write(socket, "250 AAA14672 Message accepted for delivery\r\n", -1, NULL);
 			}
 			else {
 				socket->email_size += socket->linelen;
 				
-				if (socket->data_handler)
-					socket->data_handler(socket->emailz, socket->context, socket->linelen, socket->line, (socket->email_size > EMAILZ_MAX_INDATA_SIZE));
+				// callback - data handler
+				{
+					emailz_data_handler_t handler = socket->data_handler;
+					dispatch_queue_t queue = socket->handler_queue;
+					
+					if (handler && queue) {
+						bool done = socket->email_size > EMAILZ_MAX_INDATA_SIZE;
+						size_t linelen = socket->linelen;
+						unsigned char *line = malloc(linelen+1);
+						memcpy(line, socket->line, linelen);
+						line[linelen] = '\0';
+						dispatch_async(queue, ^{ handler(socket->emailz, socket->context, linelen, line, done); free(line); });
+					}
+				}
+				
+//				if (socket->data_handler)
+//					socket->data_handler(socket->emailz, socket->context, socket->linelen, socket->line, (socket->email_size > EMAILZ_MAX_INDATA_SIZE));
 				
 				if (socket->email_size > EMAILZ_MAX_INDATA_SIZE) {
 					emailz_socket_stop(socket);
@@ -610,10 +665,25 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 			// note the socket state - that is, which command we're currently processing
 			socket->state = command;
 			
-			// if there's an smtp_handler, and if this command is part of the mask set for the handler,
-			// then call the callback so that they know what's going on.
-			if (socket->smtp_handler && (command & socket->smtp_handler_mask))
-				socket->smtp_handler(socket->emailz, socket->context, command, socket->line+socket->lineoff);
+//			// if there's an smtp_handler, and if this command is part of the mask set for the handler,
+//			// then call the callback so that they know what's going on.
+//			if (socket->smtp_handler && (command & socket->smtp_handler_mask))
+//				socket->smtp_handler(socket->emailz, socket->context, command, socket->line+socket->lineoff);
+			
+			// callback - smtp handler. if there's an smtp_handler, and if this command is part of the
+			// mask set for the handler, then call the callback so they know what's going on.
+			{
+				emailz_smtp_handler_t handler = socket->smtp_handler;
+				dispatch_queue_t queue = socket->handler_queue;
+				
+				if (handler && queue && (command & socket->smtp_handler_mask)) {
+					unsigned long arglen = strlen((const char *)(socket->line + socket->lineoff));
+					unsigned char *arg = malloc(arglen + 1);
+					memcpy(arg, (socket->line + socket->lineoff), arglen);
+					arg[arglen] = '\0';
+					dispatch_async(queue, ^{ handler(socket->emailz, socket->context, command, arg); free(arg); });
+				}
+			}
 			
 			// respond to the command. in most cases this is just an "ok" message. if the caller dares to
 			// try to start an ssl connection, then fire up our ssl code and get that going. if we don't
@@ -665,7 +735,7 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 					
 				case EMAILZ_SMTP_COMMAND_AUTH:
 					if (socket->is_secure) {
-						bool isauth = false;
+						__block bool isauth = false;
 						
 						if (0 == strncmp((char *)socket->line, "AUTH PLAIN ", 11) && socket->linelen > 13 && socket->linelen < 150) {
 							char decodeBuf[150] = { 0 };
@@ -677,7 +747,14 @@ emailz_socket_handle_read (emailz_socket_t socket, bool done, dispatch_data_t da
 							if (decodeLen >= 3) {
 								unsigned long userLen = strlen(((char *)decodeBuf)+1);
 								XLOG("[%s:%hu] user='%s', pass='%s'", socket->addrstr, socket->port, ((char *)decodeBuf)+1, ((char *)decodeBuf)+1+userLen+1);
-								isauth = !socket->auth_handler ? true : socket->auth_handler(socket->emailz, socket->context, ((char *)decodeBuf)+1, ((char *)decodeBuf)+1+userLen+1);
+								if (socket->auth_handler && socket->handler_queue) {
+									char *username = ((char *)decodeBuf) + 1;
+									char *password = ((char *)decodeBuf) + 1 + userLen + 1;
+									dispatch_sync(socket->handler_queue, ^{ isauth = socket->auth_handler(socket->emailz, socket->context, username, password); });
+								}
+								else
+									isauth = true;
+//							isauth = !socket->auth_handler ? true : socket->auth_handler(socket->emailz, socket->context, ((char *)decodeBuf)+1, ((char *)decodeBuf)+1+userLen+1);
 							}
 						}
 						
@@ -1182,6 +1259,7 @@ emailz_listener_create (emailz_t emailz, uint16_t port)
 	
 	listener->queue = emailz->listener_queue;
 	listener->port = port;
+	listener->handler_queue = emailz->handler_queue;
 	
 	return listener;
 }
@@ -1242,8 +1320,17 @@ emailz_listener_start (emailz_listener_t listener)
 		socklen_t addrlen = sizeof(addr);
 		int sock = accept(listener->socketfd, (struct sockaddr *)&addr, &addrlen);
 		
-		if (sock && listener->accept_handler)
-			listener->accept_handler(listener, sock, addr);
+		// callback - accept handler
+		if (sock) {
+			emailz_accept_handler_t handler = listener->accept_handler;
+			dispatch_queue_t queue = listener->handler_queue;
+			
+			if (handler && queue)
+				dispatch_async(queue, ^{ handler(listener, sock, addr); });
+		}
+		
+//		if (sock && listener->accept_handler)
+//			listener->accept_handler(listener, sock, addr);
 	});
 	dispatch_resume(listener->source);
 	

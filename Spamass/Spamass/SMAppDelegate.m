@@ -40,6 +40,7 @@ static NSArray *gWords;
 	
 	emailz_smtp_handler_t mSmtpHandler;
 	emailz_data_handler_t mDataHandler;
+	dispatch_queue_t _handlerQueue;
 	
 	NSCharacterSet *mEmailSplitSet;
 	
@@ -477,10 +478,12 @@ done:
 	mTinkSound = [NSSound soundNamed:@"Tink"];
 	mGeocoder = [[SMGeocoder alloc] initWithCacheDb:mGeocoderDb regionDb:mRegionDb];
 	mHttpQueue = dispatch_queue_create("net.spamass.spamass-http", DISPATCH_QUEUE_CONCURRENT);
+	_handlerQueue = dispatch_queue_create("net.spamass.spamass-handler", DISPATCH_QUEUE_SERIAL);
 	[NSThread detachNewThreadSelector:@selector(startHttp) toTarget:self withObject:nil];
 	mEmailSplitSet = [NSCharacterSet characterSetWithCharactersInString:@" <>,\r\n"];
 	mEmailz = emailz_create();
 	emailz_record_enable(mEmailz, true, "/Volumes/StoreX/Spamass/Record/");
+	emailz_set_handler_queue(mEmailz, _handlerQueue);
 	
 	//
 	// smtp handler

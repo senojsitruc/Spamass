@@ -113,6 +113,7 @@ struct emailz_socket_s
 	emailz_header_handler_t header_handler;    // email header handler
 	emailz_data_handler_t data_handler;        // email data handler
 	uint64_t smtp_handler_mask;                // mask for smtp commands
+	dispatch_queue_t handler_queue;            // the queue to use for handlers
 	
 	/**
 	 * gcd
@@ -178,6 +179,7 @@ struct emailz_listener_s
 	 * user settings
 	 */
 	emailz_accept_handler_t accept_handler;    // accept handler
+	dispatch_queue_t handler_queue;            //
 	
 	/**
 	 * gcd
@@ -209,6 +211,7 @@ struct emailz_s
 	 * user settings
 	 */
 	emailz_socket_handler_t socket_handler;    // socket state handler
+	dispatch_queue_t handler_queue;            // the queue to use for handlers
 	bool socket_record;                        // enable socket recording?
 	char record_base[1000];                    // recording base directory
 	
@@ -252,6 +255,7 @@ void emailz_destroy (emailz_t);
 bool emailz_start (emailz_t);
 bool emailz_stop (emailz_t);
 void emailz_set_socket_handler (emailz_t, emailz_socket_handler_t);
+void emailz_set_handler_queue (emailz_t, dispatch_queue_t);
 
 /**
  *
